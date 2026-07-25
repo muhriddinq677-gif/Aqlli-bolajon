@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">🇬🇧 Ingliz Tili O'yini</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', sans-serif; }
+        body { background: #fef5e7; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .game-box { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 12px 35px rgba(0,0,0,0.15); text-align: center; max-width: 550px; width: 100%; border: 4px solid #e67e22; position: relative; }
+        h1 { color: #d35400; margin-bottom: 10px; font-size: 26px; }
+        
+        /* O'yin rejimlari paneli */
+        .game-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .mode-btn { padding: 12px; font-size: 15px; border: 2px solid #f39c12; border-radius: 12px; cursor: pointer; background: #fff; font-weight: bold; transition: 0.2s; color: #d35400; }
+        .mode-btn.active { background: #e67e22; color: white; border-color: #d35400; }
+        
+        .score-box { font-size: 18px; margin-bottom: 15px; color: #27ae60; font-weight: bold; }
+        .emoji-display { font-size: 80px; background: #fffde7; padding: 15px; border-radius: 16px; margin-bottom: 15px; min-height: 120px; display: flex; justify-content: center; align-items: center; border: 3px dashed #f39c12; }
+        
+        /* So'z va Harflar ko'rinishi */
+        .word-display { font-size: 36px; font-weight: bold; color: #2c3e50; margin-bottom: 25px; letter-spacing: 4px; }
+        
+        /* 1-rejim: Variantlar uchun konteyner */
+        .options-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .opt-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 15px; font-size: 22px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #f39c12; }
+        .opt-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        /* 2-rejim: Harf terish maydoni */
+        .scramble-container { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .letter-btn { background: #3498db; color: white; border: none; width: 50px; height: 50px; font-size: 22px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #2980b9; }
+        .letter-btn:active { transform: translateY(4px); box-shadow: none; }
+        .letter-btn.used { background: #bdc3c7; box-shadow: none; cursor: not-allowed; transform: none; opacity: 0.6; }
+        
+        /* O'chirish va tozalash tugmalari */
+        .control-btns { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .ctrl-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; font-size: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        #result { margin-top: 15px; font-size: 22px; font-weight: bold; min-height: 35px; }
+        .back-btn { display: inline-block; margin-top: 25px; color: #7f8c8d; text-decoration: none; font-size: 15px; font-weight: bold; }
+        
+        /* Til tanlash */
+        .top-bar { position: relative; width: 100%; margin-top: 35px; }
+        select { position: absolute; top: -45px; right: 0; padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <div class="top-bar">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="tr">🇹🇷 TR</option>
+                <option value="de">ko</option>
+            </select>
+        </div>
+
+        <h1 data-lang="title">🇬🇧 Ingliz Tili O'yini</h1>
+        
+        <!-- O'yin Rejimlari -->
+        <div class="game-modes">
+            <button class="mode-btn active" onclick="switchMode(1)" id="mode1-btn" data-lang="m1-title">🔍 Harfni Top</button>
+            <button class="mode-btn" onclick="switchMode(2)" id="mode2-btn" data-lang="m2-title">🧩 So'z Yasash</button>
+            <button class="mode-btn" onclick="switchMode(3)" id="mode3-btn" data-lang="m3-title">🖼️ So'zni Top</button>
+        </div>
+
+        <div class="score-box"><span data-lang="score">Ball</span>: <span id="score">0</span></div>
+        
+        <div class="emoji-display" id="emoji-area">🍎</div>
+        
+        <!-- Ko'rsatiladigan so'z manzili (_ bilan yoki terilayotgan so'z) -->
+        <div class="word-display" id="word-area">A_PLE</div>
+        
+        <!-- 1-Rejim: 4 ta harf varianti (Dinamik to'ladi) -->
+        <div class="options-grid" id="options-box">
+            <button class="opt-btn" onclick="checkMode1('A')">A</button>
+            <button class="opt-btn" onclick="checkMode1('B')">B</button>
+            <button class="opt-btn" onclick="checkMode1('C')">C</button>
+            <button class="opt-btn" onclick="checkMode1('D')">D</button>
+        </div>
+        
+        <!-- 2-Rejim: Aralashgan harflar va boshqaruv (Dinamik to'ladi) -->
+        <div id="scramble-box" style="display: none;">
+            <div class="scramble-container" id="letters-container"></div>
+            <div class="control-btns">
+                <button class="ctrl-btn" onclick="resetScrambleWord()" data-lang="btn-clear"><i class="fas fa-undo"></i> Tozalash</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+        
+<!-- Barcha o'yin HTML fayllarida orqaga qaytish tugmasini shunday o'zgartiring: -->
+<a href="index.html" onclick="saveScoreAndGoBack()" class="back-btn">
+    <i class="fas fa-arrow-left"></i> <span>Orqaga qaytish</span>
+</a>
+
+    </div>
+<!-- 3-Rejim: Emojiga mos so'zni topish -->
+<div id="match-box" style="display: none;">
+    <div class="options-grid" id="match-options-box"></div>
+</div>
+
+    <!-- JavaScript fayliga ulanish -->
+    <script>
+        let currentMatchQuestion = null;
+        let currentMode = 1; // 1 = Harfni Top, 2 = So'z Yasash
+let score = 0;
+let currentQuestion = null;
+let currentQuestionIndex = 0;
+let builtWord = ""; // 2-rejimda bola terayotgan so'z
+
+// 1-Rejim uchun savollar bazasi (Rasm, To'g'ri so'z, yashirin harf indeksi, 4 ta harf varianti)
+// 1-Rejim uchun savollar bazasi (Jami 50 ta savol)
+const mode1Questions = [
+    { emoji: "🍎", word: "APPLE", missingIdx: 1, display: "A_PLE", options: ["P", "B", "T", "O"] },
+    { emoji: "🐶", word: "DOG", missingIdx: 1, display: "D_G", options: ["O", "A", "E", "U"] },
+    { emoji: "🚗", word: "CAR", missingIdx: 2, display: "CA_", options: ["R", "T", "M", "S"] },
+    { emoji: "🦁", word: "LION", missingIdx: 0, display: "_ION", options: ["L", "T", "K", "M"] },
+    { emoji: "🍌", word: "BANANA", missingIdx: 2, display: "BA_ANA", options: ["N", "M", "L", "K"] },
+    { emoji: "🐈", word: "CAT", missingIdx: 0, display: "_AT", options: ["C", "B", "M", "R"] },
+    { emoji: "🦊", word: "FOX", missingIdx: 2, display: "FO_", options: ["X", "G", "T", "K"] },
+    { emoji: "🐮", word: "COW", missingIdx: 1, display: "C_W", options: ["O", "A", "E", "I"] },
+    { emoji: "🐷", word: "PIG", missingIdx: 1, display: "P_G", options: ["I", "E", "O", "A"] },
+    { emoji: "🦉", word: "OWL", missingIdx: 0, display: "_WL", options: ["O", "A", "U", "E"] },
+    { emoji: "🌞", word: "SUN", missingIdx: 1, display: "S_N", options: ["U", "O", "A", "E"] },
+    { emoji: "⭐", word: "STAR", missingIdx: 2, display: "ST_R", options: ["A", "E", "O", "I"] },
+    { emoji: "🌳", word: "TREE", missingIdx: 2, display: "TR_E", options: ["E", "A", "O", "I"] },
+    { emoji: "🐟", word: "FISH", missingIdx: 3, display: "FIS_", options: ["H", "T", "K", "S"] },
+    { emoji: "🐦", word: "BIRD", missingIdx: 1, display: "B_RD", options: ["I", "E", "A", "O"] },
+    { emoji: "🐸", word: "FROG", missingIdx: 2, display: "FR_G", options: ["O", "A", "E", "U"] },
+    { emoji: "🦆", word: "DUCK", missingIdx: 3, display: "DUC_", options: ["K", "T", "P", "S"] },
+    { emoji: "🚢", word: "SHIP", missingIdx: 0, display: "_HIP", options: ["S", "C", "T", "B"] },
+    { emoji: "🚲", word: "BIKE", missingIdx: 3, display: "BIK_", options: ["E", "A", "O", "I"] },
+    { emoji: "✏️", word: "PEN", missingIdx: 1, display: "P_N", options: ["E", "A", "O", "I"] },
+    { emoji: "📖", word: "BOOK", missingIdx: 2, display: "BO_K", options: ["O", "A", "E", "U"] },
+    { emoji: "🥛", word: "MILK", missingIdx: 2, display: "MI_K", options: ["L", "T", "R", "N"] },
+    { emoji: "🥚", word: "EGG", missingIdx: 0, display: "_GG", options: ["E", "A", "O", "U"] },
+    { emoji: "🧁", word: "CAKE", missingIdx: 1, display: "C_KE", options: ["A", "E", "O", "I"] },
+    { emoji: "🌹", word: "ROSE", missingIdx: 3, display: "ROS_", options: ["E", "A", "O", "I"] },
+    { emoji: "⚽", word: "BALL", missingIdx: 1, display: "B_LL", options: ["A", "E", "O", "U"] },
+    { emoji: "🪁", word: "KITE", missingIdx: 0, display: "_ITE", options: ["K", "B", "F", "M"] },
+    { emoji: "💍", word: "RING", missingIdx: 3, display: "RIN_", options: ["G", "K", "T", "D"] },
+    { emoji: "👑", word: "KING", missingIdx: 0, display: "_ING", options: ["K", "R", "S", "M"] },
+    { emoji: "🏠", word: "HOUSE", missingIdx: 1, display: "H_USE", options: ["O", "A", "E", "I"] },
+    { emoji: "🚪", word: "DOOR", missingIdx: 2, display: "DO_R", options: ["O", "A", "E", "U"] },
+    { emoji: "🪟", word: "WINDOW", missingIdx: 3, display: "WIN_OW", options: ["D", "T", "B", "P"] },
+    { emoji: "🛋️", word: "SOFA", missingIdx: 3, display: "SOF_", options: ["A", "E", "O", "I"] },
+    { emoji: "🛏️", word: "BED", missingIdx: 2, display: "BE_", options: ["D", "T", "G", "N"] },
+    { emoji: "💡", word: "LAMP", missingIdx: 3, display: "LAM_", options: ["P", "B", "T", "K"] },
+    { emoji: "🕰️", word: "CLOCK", missingIdx: 4, display: "CLOC_", options: ["K", "T", "P", "S"] },
+    { emoji: "🧦", word: "SOCK", missingIdx: 1, display: "S_CK", options: ["O", "A", "E", "U"] },
+    { emoji: "👟", word: "SHOE", missingIdx: 3, display: "SHO_", options: ["E", "A", "O", "I"] },
+    { emoji: "🧢", word: "CAP", missingIdx: 2, display: "CA_", options: ["P", "T", "N", "B"] },
+    { emoji: "🧥", word: "COAT", missingIdx: 2, display: "CO_T", options: ["A", "E", "O", "I"] },
+    { emoji: "🌽", word: "CORN", missingIdx: 3, display: "COR_", options: ["N", "M", "T", "K"] },
+    { emoji: "🥜", word: "NUT", missingIdx: 1, display: "N_T", options: ["U", "O", "A", "E"] },
+    { emoji: "🍐", word: "PEAR", missingIdx: 1, display: "P_EAR", options: ["E", "A", "O", "I"] },
+    { emoji: "🍇", word: "GRAPE", missingIdx: 4, display: "GRAP_", options: ["E", "A", "O", "I"] },
+    { emoji: "🍈", word: "MELON", missingIdx: 3, display: "MEL_N", options: ["O", "A", "E", "I"] },
+    { emoji: "🍋", word: "LEMON", missingIdx: 0, display: "_EMON", options: ["L", "R", "T", "M"] },
+    { emoji: "🧅", word: "ONION", missingIdx: 2, display: "ON_ON", options: ["I", "E", "A", "O"] },
+    { emoji: "🥕", word: "CARROT", missingIdx: 3, display: "CAR_OT", options: ["R", "T", "N", "M"] },
+    { emoji: "🛩️", word: "PLANE", missingIdx: 4, display: "PLAN_", options: ["E", "A", "O", "I"] },
+    { emoji: "🚂", word: "TRAIN", missingIdx: 2, display: "TR_AIN", options: ["A", "E", "O", "I"] }
+];
+
+// 2-Rejim uchun savollar bazasi (Jami 50 ta savol)
+const mode2Questions = [
+    { emoji: "🐱", word: "CAT", scrambled: ["T", "C", "A"] },
+    { emoji: "🐟", word: "FISH", scrambled: ["S", "I", "F", "H"] },
+    { emoji: "🐸", word: "FROG", scrambled: ["G", "R", "O", "F"] },
+    { emoji: "🛩️", word: "PLANE", scrambled: ["N", "A", "E", "P", "L"] },
+    { emoji: "⚽", word: "BALL", scrambled: ["L", "A", "B", "L"] },
+    { emoji: "🦁", word: "LION", scrambled: ["I", "O", "N", "L"] },
+    { emoji: "🐦", word: "BIRD", scrambled: ["R", "D", "B", "I"] },
+    { emoji: "🦆", word: "DUCK", scrambled: ["C", "U", "K", "D"] },
+    { emoji: "🐻", word: "BEAR", scrambled: ["A", "R", "B", "E"] },
+    { emoji: "🐺", word: "WOLF", scrambled: ["L", "F", "W", "O"] },
+    { emoji: "🦊", word: "FOX", scrambled: ["X", "O", "F"] },
+    { emoji: "🐮", word: "COW", scrambled: ["W", "C", "O"] },
+    { emoji: "🐷", word: "PIG", scrambled: ["G", "I", "P"] },
+    { emoji: "🐏", word: "RAM", scrambled: ["M", "R", "A"] },
+    { emoji: "🐐", word: "GOAT", scrambled: ["A", "T", "G", "O"] },
+    { emoji: "🐎", word: "HORSE", scrambled: ["R", "S", "H", "O", "E"] },
+    { emoji: "🐭", word: "MOUSE", scrambled: ["S", "U", "M", "O", "E"] },
+    { emoji: "🐒", word: "MONKEY", scrambled: ["K", "N", "E", "M", "O", "Y"] },
+    { emoji: "🐪", word: "CAMEL", scrambled: ["M", "L", "C", "A", "E"] },
+    { emoji: "🐘", word: "ELEPHANT", scrambled: ["P", "H", "A", "N", "E", "L", "T", "I"] },
+    { emoji: "🐜", word: "ANT", scrambled: ["N", "T", "A"] },
+    { emoji: "🐝", word: "BEE", scrambled: ["E", "B", "E"] },
+    { emoji: "🦀", word: "CRAB", scrambled: ["A", "B", "C", "R"] },
+    { emoji: "🐢", word: "TURTLE", scrambled: ["R", "T", "L", "T", "U", "E"] },
+    { emoji: "🍎", word: "APPLE", scrambled: ["P", "L", "A", "E", "P"] },
+    { emoji: "🍌", word: "BANANA", scrambled: ["N", "A", "N", "B", "A", "A"] },
+    { emoji: "🍐", word: "PEAR", scrambled: ["R", "A", "P", "E"] },
+    { emoji: "🍇", word: "GRAPE", scrambled: ["P", "R", "G", "A", "E"] },
+    { emoji: "🍋", word: "LEMON", scrambled: ["M", "O", "L", "E", "N"] },
+    { emoji: "🍑", word: "PEACH", scrambled: ["C", "H", "P", "E", "A"] },
+    { emoji: "🥝", word: "KIWI", scrambled: ["W", "I", "K", "I"] },
+    { emoji: "🧅", word: "ONION", scrambled: ["N", "I", "O", "O", "N"] },
+    { emoji: "🌽", word: "CORN", scrambled: ["R", "N", "C", "O"] },
+    { emoji: "🥛", word: "MILK", scrambled: ["L", "K", "M", "I"] },
+    { emoji: "🥚", word: "EGG", scrambled: ["G", "E", "G"] },
+    { emoji: "🚗", word: "CAR", scrambled: ["R", "A", "C"] },
+    { emoji: "🚌", word: "BUS", scrambled: ["S", "U", "B"] },
+    { emoji: "🚲", word: "BIKE", scrambled: ["K", "I", "B", "E"] },
+    { emoji: "🚢", word: "SHIP", scrambled: ["H", "P", "S", "I"] },
+    { emoji: "✏️", word: "PEN", scrambled: ["N", "P", "E"] },
+    { emoji: "📖", word: "BOOK", scrambled: ["O", "K", "B", "O"] },
+    { emoji: "🚪", word: "DOOR", scrambled: ["O", "R", "D", "O"] },
+    { emoji: "🛏️", word: "BED", scrambled: ["E", "D", "B"] },
+    { emoji: "🌞", word: "SUN", scrambled: ["N", "S", "U"] },
+    { emoji: "⭐", word: "STAR", scrambled: ["A", "T", "S", "R"] },
+    { emoji: "🌲", word: "TREE", scrambled: ["E", "R", "T", "E"] },
+    { emoji: "🌹", word: "ROSE", scrambled: ["S", "O", "R", "E"] },
+    { emoji: "🪁", word: "KITE", scrambled: ["T", "E", "K", "I"] },
+    { emoji: "👑", word: "KING", scrambled: ["N", "I", "K", "G"] },
+    { emoji: "💍", word: "RING", scrambled: ["N", "G", "R", "I"] }
+];
+// 3-Rejim uchun savollar bazasi (Jami 50 ta savol)
+const mode3Questions = [
+    { emoji: "🦁", correct: "LION", options: ["LION", "CAT", "DOG", "BEAR"] },
+    { emoji: "🐵", correct: "MONKEY", options: ["MONKEY", "FOX", "COW", "PIG"] },
+    { emoji: "🐸", correct: "FROG", options: ["FROG", "FISH", "BIRD", "DUCK"] },
+    { emoji: "🦅", correct: "EAGLE", options: ["EAGLE", "OWL", "SWAN", "PARROT"] },
+    { emoji: "🦈", correct: "SHARK", options: ["SHARK", "WHALE", "CRAB", "TURTLE"] },
+    { emoji: "🍉", correct: "WATERMELON", options: ["WATERMELON", "APPLE", "BANANA", "MELON"] },
+    { emoji: "🍇", correct: "GRAPE", options: ["GRAPE", "PEAR", "LEMON", "PEACH"] },
+    { emoji: "🥕", correct: "CARROT", options: ["CARROT", "ONION", "CORN", "POTATO"] },
+    { emoji: "🍅", correct: "TOMATO", options: ["TOMATO", "CUCUMBER", "GARLIC", "PEPPER"] },
+    { emoji: "🥦", correct: "BROCCOLI", options: ["BROCCOLI", "CABBAGE", "PEAS", "CORN"] },
+    { emoji: "🚗", correct: "CAR", options: ["CAR", "BUS", "BIKE", "TRAIN"] },
+    { emoji: "✈️", correct: "PLANE", options: ["PLANE", "SHIP", "ROCKET", "TRUCK"] },
+    { emoji: "🚁", correct: "HELICOPTER", options: ["HELICOPTER", "BOAT", "TRAM", "TAXI"] },
+    { emoji: "🚒", correct: "FIRE ENGINE", options: ["FIRE ENGINE", "AMBULANCE", "POLICE CAR", "TRACTOR"] },
+    { emoji: "🏍️", correct: "MOTORCYCLE", options: ["MOTORCYCLE", "SCOOTER", "BICYCLE", "SKATEBOARD"] },
+    { emoji: "👕", correct: "SHIRT", options: ["SHIRT", "T-SHIRT", "JACKET", "COAT"] },
+    { emoji: "👗", correct: "DRESS", options: ["DRESS", "SKIRT", "JEANS", "SHORTS"] },
+    { emoji: "👟", correct: "SNEAKERS", options: ["SNEAKERS", "BOOTS", "SANDALS", "SLIPPERS"] },
+    { emoji: "👑", correct: "CROWN", options: ["CROWN", "HAT", "CAP", "HELMET"] },
+    { emoji: "🎒", correct: "BAG", options: ["BAG", "WALLET", "SUITCASE", "POCKET"] },
+    { emoji: "🛏️", correct: "BED", options: ["BED", "SOFA", "CHAIR", "TABLE"] },
+    { emoji: "🖥️", correct: "COMPUTER", options: ["COMPUTER", "LAPTOP", "PHONE", "TV"] },
+    { emoji: "⌚", correct: "WATCH", options: ["WATCH", "CLOCK", "TIMER", "COMPASS"] },
+    { emoji: "✏️", correct: "PENCIL", options: ["PENCIL", "PEN", "RULER", "ERASER"] },
+    { emoji: "✂️", correct: "SCISSORS", options: ["SCISSORS", "PAPER", "GLUE", "TAPE"] },
+    { emoji: "⚽", correct: "FOOTBALL", options: ["FOOTBALL", "TENNIS", "BOXING", "GOLF"] },
+    { emoji: "🎸", correct: "GUITAR", options: ["GUITAR", "PIANO", "DRUM", "VIOLIN"] },
+    { emoji: "🔑", correct: "KEY", options: ["KEY", "LOCK", "CHAIN", "BELL"] },
+    { emoji: "🪞", correct: "MIRROR", options: ["MIRROR", "WINDOW", "DOOR", "WALL"] },
+    { emoji: "🎈", correct: "BALLOON", options: ["BALLOON", "TOY", "DOLL", "KITE"] },
+    { emoji: "🧀", correct: "CHEESE", options: ["CHEESE", "MILK", "BUTTER", "BREAD"] },
+    { emoji: "🍕", correct: "PIZZA", options: ["PIZZA", "BURGER", "SANDWICH", "PASTA"] },
+    { emoji: "🍦", correct: "ICE CREAM", options: ["ICE CREAM", "SWEET", "CHOCOLATE", "CAKE"] },
+    { emoji: "🍿", correct: "POPCORN", options: ["POPCORN", "CHIPS", "COOKIES", "NUTS"] },
+    { emoji: "🍯", correct: "HONEY", options: ["HONEY", "JAM", "SUGAR", "SALT"] },
+    { emoji: "🌞", correct: "SUN", options: ["SUN", "MOON", "STAR", "CLOUD"] },
+    { emoji: "🌧️", correct: "RAIN", options: ["RAIN", "SNOW", "WIND", "STORM"] },
+    { emoji: "🔥", correct: "FIRE", options: ["FIRE", "WATER", "ICE", "SMOKE"] },
+    { emoji: "🏔️", correct: "MOUNTAIN", options: ["MOUNTAIN", "HILL", "RIVER", "SEA"] },
+    { emoji: "🏝️", correct: "ISLAND", options: ["ISLAND", "BEACH", "DESERT", "FOREST"] },
+    { emoji: "❤️", correct: "HEART", options: ["HEART", "STAR", "CIRCLE", "SQUARE"] },
+    { emoji: "💎", correct: "DIAMOND", options: ["DIAMOND", "GOLD", "RING", "COIN"] },
+    { emoji: "🔔", correct: "BELL", options: ["BELL", "HORN", "WHISTLE", "DRUM"] },
+    { emoji: "🎁", correct: "GIFT", options: ["GIFT", "BOX", "BOW", "CARD"] },
+    { emoji: "🕯️", correct: "CANDLE", options: ["CANDLE", "LAMP", "LIGHT", "MATCH"] },
+    { emoji: "🎨", correct: "ART", options: ["ART", "MUSIC", "DANCE", "SPORT"] },
+    { emoji: "🦷", correct: "TOOTH", options: ["TOOTH", "BONE", "HAIR", "EYE"] },
+    { emoji: "🕶️", correct: "GLASSES", options: ["GLASSES", "HAT", "MASK", "GLOVES"] },
+    { emoji: "☂️", correct: "UMBRELLA", options: ["UMBRELLA", "COAT", "BOOTS", "HAT"] },
+    { emoji: "🔨", correct: "HAMMER", options: ["HAMMER", "SAW", "AXE", "SCREW"] }
+];
+
+
+
+const langData = {
+    uz: { 
+        title: "🇬🇧 Ingliz Tili O'yini", 
+        score: "Ball", 
+        "btn-back": "Orqaga qaytish", 
+        right: "🎉 To'g'ri! Barakalla!", 
+        wrong: "❌ Noto'g'ri, yana urinib ko'r!", 
+        "m1-title": "🔍 Harfni Top", 
+        "m2-title": "🧩 So'z Yasash", 
+        "m3-title": "🖼️ So'zni Top",
+        "btn-clear": "Tozalash" 
+    }, 
+    en: { 
+        title: "🇬🇧 English Word Game", 
+        score: "Score", 
+        "btn-back": "Go Back", 
+        right: "🎉 Correct! Well done!", 
+        wrong: "❌ Incorrect, try again!", 
+        "m1-title": "🔍 Missing Letter", 
+        "m2-title": "🧩 Word Scramble", 
+        "m3-title": "🖼️ Word Match",
+        "btn-clear": "Clear" 
+    }, 
+    ru: { 
+        title: "🇬🇧 Игра Английский Язык", 
+        score: "Баллы", 
+        "btn-back": "Назад", 
+        right: "🎉 Правильно! Молодец!", 
+        wrong: "❌ Неверно, попробуйте еще раз!", 
+        "m1-title": "🔍 Найди букву", 
+        "m2-title": "🧩 Составь слово", 
+        "m3-title": "🖼️ Найди слово",
+        "btn-clear": "Очистить" 
+    }, 
+    tr: { 
+        title: "🇬🇧 İngilizce Kelime Oyunu", 
+        score: "Puan", 
+        "btn-back": "Geri Dön", 
+        right: "🎉 Doğru! Tebrikler!", 
+        wrong: "❌ Yanlış, tekrar dene!", 
+        "m1-title": "🔍 Harfi Bul", 
+        "m2-title": "🧩 Kelime Türet", 
+        "m3-title": "🖼️ Kelime Eşleştir",
+        "btn-clear": "Temizle" 
+    }, 
+   ko: { 
+    title: "🇬🇧 영어 게임", 
+    score: "점수", 
+    "btn-back": "돌아가기", 
+    right: "🎉 정답입니다! 잘했어요!", 
+    wrong: "❌ 틀렸습니다, 다시 시도해보세요!", 
+    "m1-title": "🔍 글자 찾기", 
+    "m2-title": "🧩 단어 만들기", 
+    "m3-title": "🖼️ 단어 맞추기", 
+    "btn-clear": "지우기" 
+}
+
+};
+
+function switchMode(mode) {
+    currentMode = mode;
+    currentQuestionIndex = 0;
+    
+    document.getElementById("mode1-btn").classList.remove("active");
+    document.getElementById("mode2-btn").classList.remove("active");
+    document.getElementById("mode3-btn").classList.remove("active");
+    
+    document.getElementById("options-box").style.display = "none";
+    document.getElementById("scramble-box").style.display = "none";
+    document.getElementById("match-box").style.display = "none";
+    
+    if (mode === 1) {
+        document.getElementById("mode1-btn").classList.add("active");
+        document.getElementById("options-box").style.display = "grid";
+    } else if (mode === 2) {
+        document.getElementById("mode2-btn").classList.add("active");
+        document.getElementById("scramble-box").style.display = "block";
+    } else if (mode === 3) {
+        document.getElementById("mode3-btn").classList.add("active");
+        document.getElementById("match-box").style.display = "block";
+    }
+    generateQuestion();
+}
+
+function generateQuestion() {
+    document.getElementById('result').innerText = '';
+    
+    if (currentMode === 1) {
+        if (currentQuestionIndex >= mode1Questions.length) currentQuestionIndex = 0;
+        currentQuestion = mode1Questions[currentQuestionIndex];
+        
+        document.getElementById("emoji-area").innerText = currentQuestion.emoji;
+        document.getElementById("word-area").innerText = currentQuestion.display;
+        
+        // Variantlarni joylash
+        const optionsBox = document.getElementById("options-box");
+        optionsBox.innerHTML = "";
+        currentQuestion.options.forEach(letter => {
+            optionsBox.innerHTML += `<button class="opt-btn" onclick="checkMode1('${letter}')">${letter}</button>`;
+        });
+    } // generateQuestion funksiyasi ichidagi shart oxiriga qo'shiladi:
+if (currentMode === 1) {
+    // ... eski kod
+} else if (currentMode === 2) {
+    // ... eski kod
+} else if (currentMode === 3) {
+    if (currentQuestionIndex >= mode3Questions.length) currentQuestionIndex = 0;
+    currentMatchQuestion = mode3Questions[currentQuestionIndex];
+    
+    document.getElementById("emoji-area").innerText = currentMatchQuestion.emoji;
+    document.getElementById("word-area").innerText = "???";
+    
+    const matchOptionsBox = document.getElementById("match-options-box");
+    matchOptionsBox.innerHTML = "";
+    currentMatchQuestion.options.forEach(option => {
+        matchOptionsBox.innerHTML += `<button class="opt-btn" onclick="checkMode3('${option}')">${option}</button>`;
+    });
+} }
+
+
+// 1-Rejim: Harfni tekshirish
+function checkMode1(selectedLetter) {
+    const resultDiv = document.getElementById('result');
+    const currentLang = document.getElementById('lang-select').value;
+    const correctLetter = currentQuestion.word[currentQuestion.missingIdx];
+
+    if (selectedLetter === correctLetter) {
+        score += 10;
+        document.getElementById('score').innerText = score;
+        document.getElementById("word-area").innerText = currentQuestion.word;
+        resultDiv.innerText = langData[currentLang].right;
+        resultDiv.style.color = "#2ecc71";
+        currentQuestionIndex++;
+        setTimeout(generateQuestion, 1500);
+    } else {
+        resultDiv.innerText = langData[currentLang].wrong;
+        resultDiv.style.color = "#e74c3c";
+    }
+}
+
+// 2-Rejim: Harf tanlash bosilganda
+function selectScrambleLetter(letter, idx) {
+    const btn = document.getElementById(`scrm-${idx}`);
+    if (btn.classList.contains("used")) return;
+    
+    btn.classList.add("used");
+    builtWord += letter;
+    document.getElementById("word-area").innerText = builtWord;
+    
+    // Agar hamma harf terilgan bo'lsa tekshirish
+    if (builtWord.length === currentQuestion.word.length) {
+        checkMode2();
+    }
+}
+
+// 2-Rejim: Tozalash tugmasi bosilganda
+function resetScrambleWord() {
+    builtWord = "";
+    document.getElementById("word-area").innerText = "_ ".repeat(currentQuestion.word.length);
+    document.querySelectorAll(".letter-btn").forEach(btn => btn.classList.remove("used"));
+    document.getElementById('result').innerText = '';
+}
+
+// 2-Rejim: So'zni tekshirish
+function checkMode2() {
+    const resultDiv = document.getElementById('result');
+    const currentLang = document.getElementById('lang-select').value;
+
+    if (builtWord === currentQuestion.word) {
+        score += 15; // So'z yasash qiyinroq bo'lgani uchun ko'proq ball
+        document.getElementById('score').innerText = score;
+        resultDiv.innerText = langData[currentLang].right;
+        resultDiv.style.color = "#2ecc71";
+        currentQuestionIndex++;
+        setTimeout(generateQuestion, 1500);
+    } else {
+        resultDiv.innerText = langData[currentLang].wrong;
+        resultDiv.style.color = "#e74c3c";
+        setTimeout(resetScrambleWord, 1000); // Xato bo'lsa 1 sekunddan keyin harflarni qaytaradi
+    }
+}
+
+function changeLanguage() {
+    const lang = document.getElementById('lang-select').value;
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        el.innerText = langData[lang][key];
+    });
+}
+
+// O'yinni ilk bor ishga tushirish
+generateQuestion();
+// 3-Rejim javobini tekshirish funksiyasi
+function checkMode3(selectedWord) {
+    const resultDiv = document.getElementById('result');
+    const currentLang = document.getElementById('lang-select').value;
+
+    if (selectedWord === currentMatchQuestion.correct) {
+        score += 10;
+        document.getElementById('score').innerText = score;
+        document.getElementById("word-area").innerText = currentMatchQuestion.correct;
+        resultDiv.innerText = langData[currentLang].right;
+        resultDiv.style.color = "#2ecc71";
+        currentQuestionIndex++;
+        setTimeout(generateQuestion, 1500);
+    } else {
+        resultDiv.innerText = langData[currentLang].wrong;
+        resultDiv.style.color = "#e74c3c";
+    }
+        // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
+    }
+
+}
+
+
+    </script>
+</body>
+</html>

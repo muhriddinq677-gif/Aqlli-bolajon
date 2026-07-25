@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">✍️ Ona Tili O'yini</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', sans-serif; }
+        body { background: #fcf3cf; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .game-box { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 12px 35px rgba(0,0,0,0.15); text-align: center; max-width: 600px; width: 100%; border: 4px solid #f1c40f; position: relative; }
+        h1.main-title { color: #f39c12; margin-bottom: 15px; font-size: 28px; }
+        
+        /* Rejimlar tugmalari paneli */
+        .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .mode-btn { padding: 12px; font-size: 15px; border: 2px solid #f1c40f; border-radius: 12px; cursor: pointer; background: #fff; font-weight: bold; transition: 0.2s; color: #e67e22; }
+        .mode-btn.active { background: #f1c40f; color: #2c3e50; border-color: #f39c12; }
+        
+        .score-box { font-size: 18px; margin-bottom: 15px; color: #27ae60; font-weight: bold; }
+        
+        /* SAVOLLARNI JALB ETUVCHI KATTA KO'RINISHI (H1 FORMATIDA) */
+        .question-display { background: #fffde7; padding: 25px; border-radius: 16px; margin-bottom: 20px; min-height: 120px; display: flex; justify-content: center; align-items: center; border: 3px dashed #f1c40f; }
+        .question-display h1 { font-size: 30px; font-weight: bold; color: #2c3e50; line-height: 1.4; }
+        
+        /* 4 ta Variant tugmalari */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .opt-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 18px; font-size: 20px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #f39c12; text-align: center; }
+        .opt-btn:hover { background: #f39c12; color: white; }
+        .opt-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        #result { margin-top: 15px; font-size: 22px; font-weight: bold; min-height: 35px; }
+        .back-btn { display: inline-block; margin-top: 25px; color: #7f8c8d; text-decoration: none; font-size: 16px; font-weight: bold; }
+        
+        .top-bar { position: relative; width: 100%; margin-top: 35px; }
+        select { position: absolute; top: -45px; right: 0; padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <div class="top-bar">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="tr">🇹🇷 TR</option>
+                <option value="ko">🇰🇷 KO</option>
+            </select>
+        </div>
+
+        <h1 class="main-title" data-lang="title">✍️ Ona Tili O'yini</h1>
+        
+        <!-- To'rtta rejim tugmasi -->
+        <div class="modes">
+            <button class="mode-btn active" onclick="setMode('imlo')" id="btn-imlo" data-lang="m1-title">✍️ Imlo Qoidalari</button>
+            <button class="mode-btn" onclick="setMode('antonim')" id="btn-antonim" data-lang="m2-title">↔️ Zid So'zlar</button>
+            <button class="mode-btn" onclick="setMode('sinonim')" id="btn-sinonim" data-lang="m3-title">🔄 Ma'nodosh</button>
+            <button class="mode-btn" onclick="setMode('gap')" id="btn-gap" data-lang="m4-title">📝 Gapni Yakunla</button>
+        </div>
+
+        <div class="score-box"><span data-lang="score">Ball</span>: <span id="score">0</span></div>
+        
+        <!-- Savol maydoni (Katta sarlavhada) -->
+        <div class="question-display">
+            <h1 id="question-text">...</h1>
+        </div>
+        
+        <!-- 4 ta variant tugmalari -->
+        <div class="options-grid">
+            <button class="opt-btn" onclick="checkAnswer(0)" id="opt0">...</button>
+            <button class="opt-btn" onclick="checkAnswer(1)" id="opt1">...</button>
+            <button class="opt-btn" onclick="checkAnswer(2)" id="opt2">...</button>
+            <button class="opt-btn" onclick="checkAnswer(3)" id="opt3">...</button>
+        </div>
+        
+        <div id="result"></div>
+        
+       <!-- Barcha o'yin HTML fayllarida orqaga qaytish tugmasini shunday o'zgartiring: -->
+<a href="index.html" onclick="saveScoreAndGoBack()" class="back-btn">
+    <i class="fas fa-arrow-left"></i> <span>Orqaga qaytish</span>
+</a>
+
+
+    <script>
+        // === O'YIN HOLATI O'ZGARUVCHILARI ===
+ // Fayl boshlanishi (To'qnashuvni oldini olish uchun)
+    
+    // === O'YIN HOLATI O'ZGARUVCHILARI ===
+    let currentMode = 'imlo'; 
+    let score = 0;
+    let currentQuestionIndex = 0;
+    let currentQuestionData = null;
+
+    // === 1-BO'LIM: IMLO QOIDALARI SAVOLLAR BAZASI (10 TA) ===
+    const imloQuestions = [
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["xo'roz", "horoz", "xoroz", "xuroz"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["gup", "gap", "gp", "geb"], answer: 1 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["kitob", "kitap", "kidob", "ketob"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["quyosh", "quyoq", "quyos", "quwosh"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["maktab", "maqtab", "maktap", "mekteb"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["ko'cha", "kucha", "kocha", "ku'cha"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["baxt", "baht", "baxtt", "bahd"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["singil", "singel", "sengil", "singgili"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["shahar", "shaxar", "shahr", "shaxr"], answer: 0 },
+        { qText: { uz: "Qaysi so'z TO'G'RI yozilgan?", en: "Which word is spelled CORRECTLY?", ru: "Какое слово написано ПРАВИЛЬНО?", tr: "Hangi kelime DOĞRU yazılmıştır?", ko: "어떤 단어가 올바르게 표기되었나요?" }, options: ["yomg'ir", "yomgir", "yamg'ir", "yomg'er"], answer: 0 }
+    ];
+
+    // === 2-BO'LIM: ZID SO'ZLAR (ANTONIMLAR) SAVOLLAR BAZASI (10 TA) ===
+    const antonimQuestions = [
+        { qText: { uz: "'KATTA' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'BIG':", ru: "Найдите противоположное слово к 'БОЛЬШОЙ':", tr: "'BÜYÜK' kelimesinin zıttını bulun:", ko: "'큰'의 반대말을 고르세요:" }, options: ["uzun", "chiroyli", "kichik", "baland"], answer: 2 },
+        { qText: { uz: "'ISSIQ' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'HOT':", ru: "Найдите противоположное слово к 'ГОРЯЧИЙ':", tr: "'SICAK' kelimesinin zıttını bulun:", ko: "'뜨거운'의 반대말을 고르세요:" }, options: ["iliq", "muzdek", "sovuq", "olov"], answer: 2 },
+        { qText: { uz: "'OQ' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'WHITE':", ru: "Найдите противоположное слово к 'БЕЛЫЙ':", tr: "'BEYAZ' kelimesinin zıttını bulun:", ko: "'하얀'의 반대말을 고르세요:" }, options: ["qora", "sariq", "ko'k", "yashil"], answer: 0 },
+        { qText: { uz: "'BALAND' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'HIGH':", ru: "Найдите противоположное слово к 'ВЫСОКИЙ':", tr: "'YÜKSEK' kelimesinin zıttını bulun:", ko: "'높은'의 반대말을 고르세요:" }, options: ["keng", "uzun", "past", "chuqur"], answer: 2 },
+        { qText: { uz: "'YAXSHI' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'GOOD':", ru: "Найдите противоположное слово к 'ХОРОШИЙ':", tr: "'İYİ' kelimesinin zıttını bulun:", ko: "'좋은'의 반대말을 고르세요:" }, options: ["yomon", "chiroyli", "aqlli", "shirin"], answer: 0 },
+        { qText: { uz: "'KUNDUZ' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'DAY':", ru: "Найдите противоположное слово к 'ДЕНЬ':", tr: "'GÜNDÜZ' kelimesinin zıttını bulun:", ko: "'낮'의 반대말을 고르세요:" }, options: ["tong", "tun", "kech", "peshin"], answer: 1 },
+        { qText: { uz: "'SHIRIN' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'SWEET':", ru: "Найдите противоположное слово к 'СЛАДКИЙ':", tr: "'TATLI' kelimesinin zıttını bulun:", ko: "'달콤한'의 반대말을 고르세요:" }, options: ["achchiq", "nordon", "sho'r", "maza"], answer: 0 },
+        { qText: { uz: "'YENGIL' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'LIGHT':", ru: "Найдите противоположное слово к 'ЛЕГКИЙ':", tr: "'HAFİF' kelimesinin zıttını bulun:", ko: "'가벼운'의 반대말을 고르세요:" }, options: ["og'ir", "qattiq", "yumshoq", "yupqa"], answer: 0 },
+        { qText: { uz: "'AQLLI' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'SMART':", ru: "Найдите противоположное слово к 'УМНЫЙ':", tr: "'AKILLI' kelimesinin zıttını bulun:", ko: "'똑똑한'의 반대말을 고르세요:" }, options: ["tentak", "ahmoq", "yosh", "sodda"], answer: 1 },
+        { qText: { uz: "'TEZ' so'ziga teskari (zid) so'zni toping:", en: "Find the opposite word for 'FAST':", ru: "Найдите противоположное слово к 'БЫСТРЫЙ':", tr: "'HIZLI' kelimesinin zıttını bulun:", ko: "'빠른'의 반대말을 고르세요:" }, options: ["sekin", "shoshilib", "chaqqon", "yurib"], answer: 0 }
+    ];
+
+    // === 3-BO'LIM: MA'NODOSH SO'ZLAR (SINONIMLAR) SAVOLLAR BAZASI (10 TA) ===
+    const sinonimQuestions = [
+        { qText: { uz: "'CHIROYLI' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'BEAUTIFUL':", ru: "Найдите синоним к слову 'КРАСИВЫЙ':", tr: "'GÜZEL' kelimesinin eş anlamlısını bulun:", ko: "'예쁜'의 동의어를 고르세요:" }, options: ["xunuk", "go'zal", "kichik", "yaxshi"], answer: 1 },
+        { qText: { uz: "'KATTA' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'BIG':", ru: "Найдите синоним к слову 'БОЛЬШОЙ':", tr: "'BÜYÜK' kelimesinin eş anlamlısını bulun:", ko: "'큰'의 동의어를 고르세요:" }, options: ["uzun", "chiroyli", "ulkan", "keng"], answer: 2 },
+        { qText: { uz: "'OLIM' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'SCIENTIST':", ru: "Найдите синоним к слову 'УЧЕНЫЙ':", tr: "'ALİM' kelimesinin eş anlamlısını bulun:", ko: "'학자'의 동의어를 고르세요:" }, options: ["bilimdon", "shogird", "bola", "ishchi"], answer: 0 },
+        { qText: { uz: "'YUZ' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'FACE':", ru: "Найдите синоним к слову 'ЛИЦО':", tr: "'YUZ' (çehre) kelimesinin eş anlamlısını bulun:", ko: "'얼굴'의 동의어를 고르세요:" }, options: ["ko'z", "soch", "chehra", "qo'l"], answer: 2 },
+        { qText: { uz: "'YUGURDI' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'RAN':", ru: "Найдите синоним к слову 'БЕЖАЛ':", tr: "'KOŞTU' kelimesinin eş anlamlısını bulun:", ko: "'달렸다'의 동의어를 고르세요:" }, options: ["chopdi", "yurdi", "o'tirdi", "turdi"], answer: 0 },
+        { qText: { uz: "'DO'ST' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'FRIEND':", ru: "Найдите синоним к слову 'ДРУГ':", tr: "'ARKADAŞ' kelimesinin eş anlamlısını bulun:", ko: "'친구'의 동의어를 고르세요:" }, options: ["dushman", "o'rtoq", "begona", "bola"], answer: 1 },
+        { qText: { uz: "'TENTAK' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'FOOL':", ru: "Найдите синоним к слову 'ГЛУПЫЙ':", tr: "'APTAL' kelimesinin eş anlamlısını bulun:", ko: "'바보'의 동의어를 고르세요:" }, options: ["aqlli", "ahmoq", "sodda", "yosh"], answer: 1 },
+        { qText: { uz: "'FAQR' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'POOR':", ru: "Найдите синоним к слову 'БЕДНЫЙ':", tr: "'FAKİR' kelimesinin eş anlamlısını bulun:", ko: "'가난한'의 동의어를 고르세요:" }, options: ["boy", "kambag'al", "puldor", "och"], answer: 1 },
+        { qText: { uz: "'OZODA' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'CLEAN':", ru: "Найдите синоним к слову 'ЧИСТЫЙ':", tr: "'TEMİZ' kelimesinin eş anlamlısını bulun:", ko: "'깨끗한'의 동의어를 고르세요:" }, options: ["kir", "iflos", "toza", "yangi"], answer: 2 },
+        { qText: { uz: "'DONO' so'zining ma'nodoshini (sinonimini) toping:", en: "Find the synonym for 'WISE':", ru: "Найдите синоним к слову 'МУДРЫЙ':", tr: "'BİLGE' kelimesinin eş anlamlısını bulun:", ko: "'지혜로운'의 동의어를 고르세요:" }, options: ["aqlli", "nodon", "tentak", "yosh"], answer: 0 }
+    ];
+
+    // === 4-BO'LIM: GAPNI YAKUNLA (LOGIKA) SAVOLLAR BAZASI (10 TA) ===
+    const gapQuestions = [
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Quyosh kunduzi ...'", en: "Complete the sentence: 'The sun ... during the day'", ru: "Завершите предложение: 'Солнце днем ...'", tr: "Cümleyi tamamlayın: 'Güneş gündüzleri ...'", ko: "문장을 완성하세요: '태양은 낮에 ...'" }, options: ["charqlaydi", "yig'laydi", "uxlaydi", "yuguradi"], answer: 0 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Baliqlar suvda ...'", en: "Complete the sentence: 'Fish ... in water'", ru: "Завершите предложение: 'Рыбы в воде ...'", tr: "Cümleyi tamamlayın: 'Balıklar suda ...'", ko: "문장을 완성하세요: '물고기는 물속에서 ...'" }, options: ["uchadi", "yuzadi", "yuguradi", "sakraydi"], answer: 1 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Qushlar osmonda ...'", en: "Complete the sentence: 'Birds ... in the sky'", ru: "Завершите предложение: 'Птицы в небе ...'", tr: "Cümleyi tamamlayın: 'Kuşlar gökyüzünde ...'", ko: "문장을 완성하세요: '새들은 하늘에서 ...'" }, options: ["yuzadi", "uxlaydi", "uchadi", "yuradi"], answer: 2 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Bolalar maktabda bilim ...'", en: "Complete the sentence: 'Children ... knowledge at school'", ru: "Завершите предложение: 'Дети в школе ... знания'", tr: "Cümleyi tamamlayın: 'Çocuklar okulda bilgi ...'", ko: "문장을 완성하세요: '아이들은 학교에서 지식을 ...'" }, options: ["olishadi", "sotishadi", "otishadi", "yo'qotishadi"], answer: 0 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Kuzda daraxt barglari ...'", en: "Complete the sentence: 'In autumn, tree leaves ...'", ru: "Завершите предложение: 'Осенью листья деревьев ...'", tr: "Cümleyi tamamlayın: 'Sonbaharda ağaç yaprakları ...'", ko: "문장을 완성하세요: '가을에는 나뭇잎이 ...'" }, options: ["ko'karadi", "gullaydi", "to'kiladi", "muzlaydi"], answer: 2 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Muzqaymoq issiqda tez ...'", en: "Complete the sentence: 'Ice cream ... fast in the heat'", ru: "Завершите предложение: 'Мороженое на жаре быстро ...'", tr: "Cümleyi tamamlayın: 'Dondurma sıcakta hızlı ...'", ko: "문장을 완성하세요: '아이스크림은 더위에 빨리 ...'" }, options: ["muzlaydi", "eriydi", "qotadi", "sinadi"], answer: 1 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Mashina yo'lda to'rtta ... bilan yuradi'", en: "Complete the sentence: 'The car drives on the road with four ...'", ru: "Завершите предложение: 'Машина едет по дороге на четырех ...'", tr: "Cümleyi tamamlayın: 'Araba yolda dört ... ile gider'", ko: "문장을 완성하세요: '자동차는 도로 위를 4개의 ...로 달립니다'" }, options: ["oyna", "eshik", "gildirak", "chiroq"], answer: 2 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Yomg'ir yoqqanda biz ... tutamiz'", en: "Complete the sentence: 'When it rains, we hold an ...'", ru: "Завершите предложение: 'Когда идет дождь, мы держим ...'", tr: "Cümleyi tamamlayın: 'Yağmur yağdığında ... tutarız'", ko: "문장을 완성하세요: '비가 올 때 우리는 ...를 씁니다'" }, options: ["soyabon", "kitob", "daftar", "sumka"], answer: 0 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Kiyik o'rmonda juda tez ...'", en: "Complete the sentence: 'The deer ... very fast in the forest'", ru: "Завершите предложение: 'Олень в лесу очень быстро ...'", tr: "Cümleyi tamamlayın: 'Geyik ormanda çok hızlı ...'", ko: "문장을 완성하세요: '사슴은 숲속에서 아주 빨리 ...'" }, options: ["uchadi", "yuzadi", "yuguradi", "uxlaydi"], answer: 2 },
+        { qText: { uz: "Gapni to'g'ri so'z bilan yakunlang: 'Arilar gullardan ... yig'ishadi'", en: "Complete the sentence: 'Bees collect ... from flowers'", ru: "Завершите предложение: 'Пчелы собирают ... с цветов'", tr: "Cümleyi tamamlayın: 'Arılar çiçeklerden ... toplar'", ko: "문장을 완성하세요: '벌들은 꽃에서 ...를 모읍니다'" }, options: ["asal", "suv", "tosh", "barg"], answer: 0 }
+    ];
+
+    // === 5-BO'LIM: O'YIN MANTIQLARI, TARJIMA TIZIMI VA YAKUNIY QAVS ===
+
+    const langData = {
+        uz: { title: "✍️ Ona Tili O'yini", score: "Ball", "btn-back": "Orqaga qaytish", right: "🎉 To'g'ri! Barakalla!", wrong: "❌ Noto'g'ri, yana urinib ko'r!", "m1-title": "✍️ Imlo Qoidalari", "m2-title": "↔️ Zid So'zlar", "m3-title": "🔄 Ma'nodosh", "m4-title": "📝 Gapni Yakunla" },
+        en: { title: "✍️ Mother Tongue Game", score: "Score", "btn-back": "Go Back", right: "🎉 Correct! Well done!", wrong: "❌ Incorrect, try again!", "m1-title": "✍️ Spelling", "m2-title": "↔️ Antonyms", "m3-title": "🔄 Synonyms", "m4-title": "📝 Complete Sentence" },
+        ru: { title: "✍️ Родной Язык", score: "Баллы", "btn-back": "Назад", right: "🎉 Правильно! Молодец!", wrong: "❌ Неверно, попробуйте еще раз!", "m1-title": "✍️ Орфография", "m2-title": "↔️ Антонимы", "m3-title": "🔄 Синонимы", "m4-title": "📝 Заверши фразу" },
+        tr: { title: "✍️ Ana Dili Oyunu", score: "Puan", "btn-back": "Geri Dön", right: "🎉 Doğru! Tebrikler!", wrong: "❌ Yanlış, tekrar dene!", "m1-title": "✍️ Yazım Kuralları", "m2-title": "↔️ Zıt Kelimeler", "m3-title": "🔄 Eş Anlamlı", "m4-title": "📝 Cümleyi Tamamla" },
+        ko: { title: "✍️ 모국어 게임", score: "점수", "btn-back": "돌아가기", right: "🎉 정답입니다! 잘했어요!", wrong: "❌ 틀렸습니다, 다시 시도해보세요!", "m1-title": "✍️ 맞춤법", "m2-title": "↔️ 반대말", "m3-title": "🔄 동의어", "m4-title": "📝 문장 완성" }
+    };
+
+    // Rejimni o'zgartirish funksiyasi (Tugmalarni global oynaga chiqarish)
+    window.setMode = function(mode) {
+        currentMode = mode;
+        currentQuestionIndex = 0;
+        
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        const targetBtn = document.getElementById(`btn-${mode}`);
+        if(targetBtn) targetBtn.classList.add('active');
+        
+        generateQuestion();
+    }
+
+    // Savolni ekranga chiqarish funksiyasi
+    function generateQuestion() {
+        document.getElementById('result').innerText = '';
+        const lang = document.getElementById('lang-select').value;
+        
+        let activeQuestions = imloQuestions;
+        if (currentMode === 'antonim') activeQuestions = antonimQuestions;
+        if (currentMode === 'sinonim') activeQuestions = sinonimQuestions;
+        if (currentMode === 'gap') activeQuestions = gapQuestions;
+
+        if (currentQuestionIndex >= activeQuestions.length) {
+            currentQuestionIndex = 0;
+        }
+
+        currentQuestionData = activeQuestions[currentQuestionIndex];
+
+        document.getElementById("question-text").innerText = currentQuestionData.qText[lang] || currentQuestionData.qText['uz'];
+
+        for (let i = 0; i < 4; i++) {
+            document.getElementById(`opt${i}`).innerText = currentQuestionData.options[i];
+        }
+    }
+
+    // Javobni tekshirish funksiyasi (Global oynaga chiqarish)
+    window.checkAnswer = function(selectedIndex) {
+        const resultDiv = document.getElementById('result');
+        const lang = document.getElementById('lang-select').value;
+
+        if (selectedIndex === currentQuestionData.answer) {
+            score += 10;
+            document.getElementById('score').innerText = score;
+            resultDiv.innerText = langData[lang].right;
+            resultDiv.style.color = "#2ecc71";
+            currentQuestionIndex++;
+            setTimeout(generateQuestion, 1500);
+        } else {
+            resultDiv.innerText = langData[lang].wrong;
+            resultDiv.style.color = "#e74c3c";
+        }
+    }
+
+    // Tilni almashtirish funksiyasi (Global oynaga chiqarish)
+    window.changeLanguage = function() {
+        const lang = document.getElementById('lang-select').value;
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if(langData[lang][key]) {
+                el.innerText = langData[lang][key];
+            }
+        });
+        generateQuestion();
+    }
+    // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
+    }
+
+    // O'yinni ilk bor yuklash
+    generateQuestion();
+
+ // <--- 5-bo'lakning ENG OXIRGI va loyihani xatosiz yopuvchi qavsi!
+
+
+    </script>
+</body>
+</html>

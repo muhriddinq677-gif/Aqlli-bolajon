@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shashka </title>
+    <style>
+        :root {
+            --bg: #0f0f12;
+            --board-dark: #2c3e50;
+            --board-light: #34495e;
+            --white-piece: linear-gradient(145deg, #ffffff, #d1d1d1);
+            --black-piece: linear-gradient(145deg, #444, #111);
+            --accent: #00d2ff;
+        }
+        body {
+            display: flex; flex-direction: column; align-items: center;
+            background: var(--bg); color: #fff; font-family: sans-serif;
+            margin: 0; min-height: 100vh; touch-action: none;
+        }
+        .header { margin: 15px 0; text-align: center; }
+        .header h1 { margin: 0; font-size: 22px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Koordinatalar va chegaralar */
+        .board-wrapper { display: flex; align-items: center; border: 2px solid #444; padding: 5px; background: #1a1a1a; border-radius: 10px; }
+        .coords-y {
+            display: flex; flex-direction: column; justify-content: space-around;
+            height: 92vw; max-height: 450px; width: 25px;
+            font-weight: bold; color: #aaa; border-left: 1px solid #444; border-right: 1px solid #444; text-align: center;
+        }
+        .center-block { display: flex; flex-direction: column; align-items: center; }
+        .coords-x {
+            display: flex; justify-content: space-around;
+            width: 92vw; max-width: 450px; padding: 5px 0;
+            font-weight: bold; color: #aaa; border-top: 1px solid #444; border-bottom: 1px solid #444;
+        }
+
+        #board {
+            display: grid; grid-template-columns: repeat(8, 1fr);
+            width: 92vw; max-width: 450px; height: 92vw; max-height: 450px;
+            border: 4px solid #222;
+        }
+        .sq { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .dark { background: var(--board-dark); }
+        .light { background: var(--board-light); }
+        .piece {
+            width: 80%; height: 80%; border-radius: 50%;
+            position: relative; transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        .p-white { background: var(--white-piece); border: 1px solid #fff; }
+        .p-black { background: var(--black-piece); border: 1px solid #333; }
+        .king::after {
+            content: '★'; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); color: #f1c40f; font-size: 20px;
+        }
+        .selected { transform: scale(1.1); box-shadow: 0 0 15px var(--accent); outline: 3px solid var(--accent); z-index: 5; }
+        .status-bar { margin: 15px; padding: 10px 25px; background: #1a1a1a; border-radius: 50px; border: 1px solid #333; font-weight: bold; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        select, button { background: #222; color: #fff; border: 1px solid #444; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="header"><h1>Shashka Elite</h1></div>
+
+<div class="board-wrapper">
+    <div class="coords-y"><div>8</div><div>7</div><div>6</div><div>5</div><div>4</div><div>3</div><div>2</div><div>1</div></div>
+    <div class="center-block">
+        <div class="coords-x"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div>
+        <div id="board"></div>
+        <div class="coords-x"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div>
+    </div>
+    <div class="coords-y"><div>8</div><div>7</div><div>6</div><div>5</div><div>4</div><div>3</div><div>2</div><div>1</div></div>
+</div>
+
+<div class="status-bar" id="status">Navbat: Oqlar</div>
+<div class="controls">
+    <select id="mode" onchange="resetGame()"><option value="pve">Bot bilan</option><option value="pvp">2 Kishilik</option></select>
+    <button onclick="resetGame()">Restart</button>
+</div>
+
+<script>
+let board = [], turn = 'W', selected = null, isJumping = false;
+const boardEl = document.getElementById('board'), statusEl = document.getElementById('status');
+
+function init() {
+    board = Array(8).fill().map(() => Array(8).fill(null));
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            if ((r + c) % 2 !== 0) {
+                if (r < 3) board[r][c] = { color: 'B', king: false };
+                if (r > 4) board[r][c] = { color: 'W', king: false };
+            }
+        }
+    }
+    render();
+}
+
+function render() {
+    boardEl.innerHTML = '';
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const sq = document.createElement('div');
+            sq.className = `sq ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+            sq.onclick = () => handleSquare(r, c);
+            if (board[r][c]) {
+                const p = board[r][c];
+                const pEl = document.createElement('div');
+                pEl.className = `piece ${p.color === 'W' ? 'p-white' : 'p-black'} ${p.king ? 'king' : ''}`;
+                if (selected && selected.r === r && selected.c === c) pEl.classList.add('selected');
+                sq.appendChild(pEl);
+            }
+            boardEl.appendChild(sq);
+        }
+    }
+    statusEl.innerText = turn === 'W' ? "Navbat: Oqlar" : "Navbat: Qoralar";
+}
+
+function getAllJumps(color) {
+    let jumps = [];
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            if (board[r][c] && board[r][c].color === color) {
+                const pJumps = getPieceJumps(r, c);
+                if (pJumps.length > 0) jumps.push({ r, c, targets: pJumps });
+            }
+        }
+    }
+    return jumps;
+}
+
+function getPieceJumps(r, c) {
+    const p = board[r][c];
+    const jumps = [];
+    const dirs = [[1,1],[1,-1],[-1,1],[-1,-1]];
+    const max = p.king ? 7 : 2;
+    for (let [dr, dc] of dirs) {
+        for (let d = 2; d <= max; d++) {
+            let nr = r + d*dr, nc = c + d*dc;
+            if (nr>=0 && nr<8 && nc>=0 && nc<8 && !board[nr][nc]) {
+                let enemies = [];
+                for(let i=1; i<d; i++) {
+                    let mid = board[r+i*dr][c+i*dc];
+                    if(mid) {
+                        if(mid.color === p.color) { enemies = [1,1]; break; }
+                        enemies.push({r: r+i*dr, c: c+i*dc});
+                    }
+                }
+                if (enemies.length === 1) jumps.push({r: nr, c: nc, victim: enemies[0]});
+            }
+        }
+    }
+    return jumps;
+}
+
+function handleSquare(r, c) {
+    if (turn === 'B' && document.getElementById('mode').value === 'pve') return;
+    const p = board[r][c];
+    const availableJumps = getAllJumps(turn);
+
+    if (p && p.color === turn) {
+        if (isJumping && (selected.r !== r || selected.c !== c)) return;
+        if (availableJumps.length > 0 && !availableJumps.some(j => j.r === r && j.c === c)) {
+            alert("Urish majburiy!"); return;
+        }
+        selected = { r, c };
+        render();
+    } else if (selected) {
+        executeMove(selected.r, selected.c, r, c);
+    }
+}
+
+function executeMove(r1, c1, r2, c2) {
+    const p = board[r1][c1];
+    const jumps = getPieceJumps(r1, c1);
+    const jumpMove = jumps.find(j => j.r === r2 && j.c === c2);
+    const allBoardJumps = getAllJumps(turn);
+
+    if (allBoardJumps.length > 0 && !jumpMove) {
+        alert("Urish majburiy!"); return;
+    }
+
+    const dr = r2-r1, dc = c2-c1, steps = Math.abs(dr);
+    if (Math.abs(dr) !== Math.abs(dc) || board[r2][c2]) return;
+
+    if (!jumpMove) {
+        if (!p.king && (steps > 1 || (p.color === 'W' && dr > 0) || (p.color === 'B' && dr < 0))) return;
+        board[r2][c2] = p; board[r1][c1] = null;
+        finishTurn(r2, c2, false);
+    } else {
+        board[jumpMove.victim.r][jumpMove.victim.c] = null;
+        board[r2][c2] = p; board[r1][c1] = null;
+        finishTurn(r2, c2, true);
+    }
+}
+
+function finishTurn(r, c, jumped) {
+    if ((board[r][c].color === 'W' && r === 0) || (board[r][c].color === 'B' && r === 7)) board[r][c].king = true;
+    if (jumped && getPieceJumps(r, c).length > 0) {
+        selected = { r, c }; isJumping = true; render();
+        if (turn === 'B') setTimeout(botBrain, 500);
+    } else {
+        selected = null; isJumping = false; turn = turn === 'W' ? 'B' : 'W';
+        render(); checkWin();
+        if (turn === 'B' && document.getElementById('mode').value === 'pve') setTimeout(botBrain, 500);
+    }
+}
+
+function botBrain() {
+    const jumps = getAllJumps('B');
+    let move;
+    if (jumps.length > 0) {
+        const attacker = isJumping ? jumps.find(j => j.r === selected.r && j.c === selected.c) : jumps[Math.floor(Math.random()*jumps.length)];
+        const target = attacker.targets[Math.floor(Math.random()*attacker.targets.length)];
+        move = { r1: attacker.r, c1: attacker.c, r2: target.r, c2: target.c };
+    } else {
+        let normals = [];
+        for(let r=0; r<8; r++) { for(let c=0; c<8; c++) {
+            if(board[r][c] && board[r][c].color === 'B') {
+                const p = board[r][c];
+                [[1,1],[1,-1],... (p.king ? [[-1,1],[-1,-1]] : [])].forEach(([dr, dc]) => {
+                    let nr=r+dr, nc=c+dc;
+                    if(nr>=0 && nr<8 && nc>=0 && nc<8 && !board[nr][nc]) {
+                        if(p.king || dr > 0) normals.push({r1:r, c1:c, r2:nr, c2:nc});
+                    }
+                });
+            }
+        }}
+        move = normals[Math.floor(Math.random()*normals.length)];
+    }
+    if (move) executeMove(move.r1, move.c1, move.r2, move.c2);
+}
+
+function checkWin() {
+    let w=0, b=0; 
+    board.flat().forEach(p => { if(p?.color==='W') w++; if(p?.color==='B') b++; });
+    
+    // Satr (blokirovka) tekshiruvi
+    let canMove = false;
+    for(let r=0; r<8; r++) {
+        for(let c=0; c<8; c++) {
+            if(board[r][c] && board[r][c].color === turn) {
+                if(getPieceJumps(r,c).length > 0) { canMove = true; break; }
+                let dirs = [[1,1],[1,-1],[-1,1],[-1,-1]];
+                for(let [dr, dc] of dirs) {
+                    let nr=r+dr, nc=c+dc;
+                    if(nr>=0 && nr<8 && nc>=0 && nc<8 && !board[nr][nc]) {
+                        if(board[r][c].king || (turn==='W' && dr<0) || (turn==='B' && dr>0)) { canMove = true; break; }
+                    }
+                }
+            }
+            if(canMove) break;
+        }
+    }
+
+    if (!canMove) {
+        let msg = turn === 'W' ? `Qoralar yutdi! Oqlar ${w} ta tosh bilan satr bo'ldi.` : `Oqlar yutdi! Qoralar ${b} ta tosh bilan satr bo'ldi.`;
+        alert(msg); resetGame(); return;
+    }
+
+    if (w === 0) { alert("Qoralar yutdi!"); resetGame(); }
+    else if (b === 0) { alert("Oqlar yutdi!"); resetGame(); }
+}
+
+function resetGame() { selected = null; isJumping = false; turn = 'W'; init(); }
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolalar uchun Kod O'yini 🚀</title>
+    <style>
+        /* Umumiy fon va sahifa markazi */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* O'yin kartasi */
+        .game-card {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            width: 450px;
+            text-align: center;
+            border: 4px solid #fff;
+        }
+
+        /* Ballar paneli */
+        .score-board {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        /* Darslik joyi */
+        .theory-area {
+            background-color: #f7f9fc;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* Sudrab qo'yiladigan joy (Qutichalar) */
+        .drop-zone {
+            min-height: 60px;
+            border: 3px dashed #cbd5e1;
+            border-radius: 12px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background-color: #fafafa;
+            padding: 10px;
+        }
+
+        /* Sudraluvchi kod bloklari */
+        .code-block {
+            background-color: #4facfe;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: grab;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+
+        .code-block:active {
+            cursor: grabbing;
+        }
+
+        /* Tekshirish tugmasi */
+        .check-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px #27ae60;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .check-btn:active {
+            box-shadow: none;
+            transform: translateY(5px);
+        }
+
+        /* Natija xabari */
+        #result-msg {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- O'yin Kartasi -->
+    <div class="game-card">
+        <div class="score-board">✨ Ball: <span id="score">0</span></div>
+        
+        <div class="theory-area">
+            <h3>📖 Dars 1: Katta Sarlavha</h3>
+            <p>Saytda eng katta sarlavha yozish uchun kodni to'g'ri tartibda joylashtir!</p>
+        </div>
+
+        <!-- Javir qutisi (Bunga bloklar tashlanadi) -->
+        <p>🧩 Kodni shu yerga sudrab keltir:</p>
+        <div class="drop-zone" id="target-zone"></div>
+
+        <!-- Shunchaki sochilib yotgan bloklar joyi -->
+        <p>👇 Bloklar:</p>
+        <div class="drop-zone" id="source-zone">
+            <div class="code-block" draggable="true" id="b1">&lt;h1&gt;</div>
+            <div class="code-block" draggable="true" id="b2">Salom</div>
+            <div class="code-block" draggable="true" id="b3">&lt;/h1&gt;</div>
+        </div>
+
+        <button class="check-btn">Tekshirish 🎯</button>
+        <div id="result-msg"></div>
+    </div>
+<script>
+    // ==================== 1-QISM ====================
+let currentLessonIdx = 0;
+let score = 0;
+
+// Bolalarbop sudrab o'rganish darslar bazasi
+const dragDatabase = [
+    {
+        id: 1,
+        title: "Sarlavha teglari (h1)",
+        theory: "Saytda eng katta sarlavha yaratish uchun kod bloklarini to'g'ri tartibda joylashtir, kichik dasturchi! 😊",
+        correctOrder: ["<h1>", "Salom", "</h1>"],
+        blocks: ["</h1>", "<h1>", "Salom"]
+    },
+    {
+        id: 2,
+        title: "Oddiy matn tegi (p)",
+        theory: "Saytda oddiy hikoya yoki matnlarni yozish uchun 'p' (Paragraph) tegini to'g'ri ketma-ketlikda yig'!",
+        correctOrder: ["<p>", "Hikoya", "</p>"],
+        blocks: ["<p>", "</p>", "Hikoya"]
+    },
+    {
+        id: 3,
+        title: "Matnni qalin qilish (b)",
+        theory: "Yozgan matningni hammaga juda qalin qilib ko'rsatish uchun 'b' (Bold) tegidan foydalanib yig'ib ko'r!",
+        correctOrder: ["<b>", "Muhim", "</b>"],
+        blocks: ["</b>", "Muhim", "<b>"]
+    },
+    {
+        id: 4,
+        title: "Matnni yonbosh qilish (i)",
+        theory: "Harflarni chiroyli va yonbosh (kursiv) holatga keltirish uchun 'i' (Italic) tegi bloklarini joylashtir!",
+        correctOrder: ["<i>", "Korsiv", "</i>"],
+        blocks: ["<i>", "</i>", "Korsiv"]
+    },
+    {
+        id: 5,
+        title: "Tagiga chizilgan matn (u)",
+        theory: "Matnning tagiga chiziq tortish va diqqatni jalb qilish uchun 'u' (Underline) tegi bloklarini tartibla!",
+        correctOrder: ["<u>", "Chiziq", "</u>"],
+        blocks: ["Chiziq", "<u>", "</u>"]
+    },
+    {
+        id: 6,
+        title: "Saytga rasm qo'shish (img)",
+        theory: "Rasm qo'shish uchun atributlarni to'g'ri qo'y. 'img' tegining yopiluvchi sherigi yo'q, u yolg'iz teg!",
+        correctOrder: ["<img", "src='foto.png'", ">"],
+        blocks: [">", "src='foto.png'", "<img"]
+    },
+    {
+        id: 7,
+        title: "Saytga havola qo'shish (a)",
+        theory: "Boshqa saytlarga o'tuvchi ko'prik (havola) yaratish uchun 'a' tegi va 'href' manzilini to'g'ri yig'!",
+        correctOrder: ["<a href='google.com'>", "Sayt", "</a>"],
+        blocks: ["Sayt", "</a>", "<a href='google.com'>"]
+    },
+// ==================== 2-QISM ====================
+    {
+        id: 8,
+        title: "Ro'yxat yaratish (ul va li)",
+        theory: "Narsalarni ketma-ket nuqta bilan sanab chiqish uchun ro'yxat bloklarini to'g'ri tartibda ter!",
+        correctOrder: ["<ul>", "<li>", "Muzqaymoq", "</li>", "</ul>"],
+        blocks: ["<li>", "</ul>", "Muzqaymoq", "<ul>", "</li>"]
+    },
+    {
+        id: 9,
+        title: "Tugmalar yaratish (button)",
+        theory: "Saytda bosiladigan sehrli tugma hosil qilish uchun button bloklarini to'g'ri joylashtir!",
+        correctOrder: ["<button>", "Meni bos!", "</button>"],
+        blocks: ["Meni bos!", "</button>", "<button>"]
+    },
+    {
+        id: 10,
+        title: "Asosiy quti tegi (div)",
+        theory: "Bir nechta elementni bitta ko'rinmas qutiga joylash uchun div bloklarini yig'!",
+        correctOrder: ["<div>", "Matn", "</div>"],
+        blocks: ["</div>", "<div>", "Matn"]
+    },
+    {
+        id: 11,
+        title: "CSS Rang berish",
+        theory: "Sarlavha matnini qizil rangga bo'yash uchun CSS stil qoidasini to'g'ri tartibda qo'y!",
+        correctOrder: ["h1", "{ color:", "red;", "}"],
+        blocks: ["red;", "}", "h1", "{ color:"]
+    },
+    {
+        id: 12,
+        title: "Orqa fon rangi",
+        theory: "Butun saytning orqa fonini sariq rangga bo'yash uchun body dizaynini to'g'rilab chiq!",
+        correctOrder: ["body", "{ background-color:", "yellow;", "}"],
+        blocks: ["{ background-color:", "body", "}", "yellow;"]
+    },
+    {
+        id: 13,
+        title: "Matn o'lchami",
+        theory: "Matn harflarini 20 piksel hajmgacha kattalashtirish uchun font-size bloklarini ter!",
+        correctOrder: ["p", "{ font-size:", "20px;", "}"],
+        blocks: ["20px;", "p", "{ font-size:", "}"]
+    },
+    {
+        id: 14,
+        title: "Matnni o'rtaga keltirish",
+        theory: "Yozilgan sarlavhani roppa-rosa saytning o'rtasiga tekislash uchun text-align kodini yig'!",
+        correctOrder: ["h1", "{ text-align:", "center;", "}"],
+        blocks: ["{ text-align:", "center;", "}", "h1"]
+    },
+    {
+        id: 15,
+        title: "Chegara chizig'i (border)",
+        theory: "Quti atrofiga 2 piksel qalinlikdagi qora ramka chizish uchun border kodini to'g'rilang!",
+        correctOrder: ["div", "{ border:", "2px solid black;", "}"],
+        blocks: ["2px solid black;", "div", "}", "{ border:"]
+    },
+    {
+        id: 16,
+        title: "Burchaklarni silliqlash",
+        theory: "Tugmaning o'tkir burchaklarini 10 pikselga yumshatish uchun radius bloklarini joylashtir!",
+        correctOrder: ["button", "{ border-radius:", "10px;", "}"],
+        blocks: ["}", "{ border-radius:", "10px;", "button"]
+    },
+    {
+        id: 17,
+        title: "Element kengligi (width)",
+        theory: "Rasmning enini (kengligini) 200 piksel qilish uchun width qoidasini tartibga keltir!",
+        correctOrder: ["img", "{ width:", "200px;", "}"],
+        blocks: ["{ width:", "img", "}", "200px;"]
+    },
+    {
+        id: 18,
+        title: "Element balandligi (height)",
+        theory: "Qutining bo'yini (balandligini) 150 piksel qilib sozlash uchun height bloklarini yig'!",
+        correctOrder: ["div", "{ height:", "150px;", "}"],
+        blocks: ["150px;", "}", "div", "{ height:"]
+    },
+    {
+        id: 19,
+        title: "Ichki masofa (padding)",
+        theory: "Quti ichidagi yozuvlar devorga yopishib qolmasligi uchun padding masofasini to'g'rilang!",
+        correctOrder: ["div", "{ padding:", "20px;", "}"],
+        blocks: ["{ padding:", "20px;", "div", "}"]
+    },
+    {
+        id: 20,
+        title: "Tashqi masofa (margin)",
+        theory: "Ikki element bir-biriga urilib ketmasligi uchun tashqi bo'shliq margin bloklarini tartibla!",
+        correctOrder: ["div", "{ margin:", "30px;", "}"],
+        blocks: ["30px;", "}", "div", "{ margin:"]
+    }
+];
+// ==================== 3-QISM ====================
+// Sahifa yuklanganda birinchi darsni boshlash
+let currentLesson = dragDatabase[currentLessonIdx];
+
+function loadDragLesson() {
+    currentLesson = dragDatabase[currentLessonIdx];
+    if (!currentLesson) return;
+
+    // Dars matnlarini yangilash
+    document.querySelector(".theory-area").innerHTML = `
+        <h3>📖 Dars ${currentLesson.id}: ${currentLesson.title}</h3>
+        <p>${currentLesson.theory}</p>
+    `;
+
+    // Qutilarni tozalash
+    const targetZone = document.getElementById("target-zone");
+    const sourceZone = document.getElementById("source-zone");
+    targetZone.innerHTML = "";
+    sourceZone.innerHTML = "";
+    document.getElementById("result-msg").innerText = "";
+
+    // Bloklarni aralash holatda yaratish
+    currentLesson.blocks.forEach((text, index) => {
+        const block = document.createElement("div");
+        block.className = "code-block";
+        block.draggable = true;
+        block.id = `block-${index}`;
+        block.innerText = text;
+
+        // Sudrash hodisalarini ulash
+        block.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", e.target.id);
+        });
+
+        sourceZone.appendChild(block);
+    });
+}
+
+// Qutichalarga tashlash qoidalarini o'rnatish
+const zones = [document.getElementById("target-zone"), document.getElementById("source-zone")];
+zones.forEach(zone => {
+    zone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+    });
+
+    zone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text/plain");
+        const draggedElement = document.getElementById(id);
+        
+        // Agar to'g'ridan-to'g'ri zona ichiga tashlansa
+        if (e.target.classList.contains("drop-zone")) {
+            e.target.appendChild(draggedElement);
+        } else if (e.target.classList.contains("code-block")) {
+            // Agar boshqa blokning ustiga tashlansa, yoniga qo'shish
+            e.target.parentNode.insertBefore(draggedElement, e.target.nextSibling);
+        }
+    });
+});
+
+// Javobni tekshirish tugmasi
+document.querySelector(".check-btn").onclick = function() {
+    const targetZone = document.getElementById("target-zone");
+    const userBlocks = Array.from(targetZone.children).map(block => block.innerText);
+    const resultMsg = document.getElementById("result-msg");
+
+    // Bloklar soni va ketma-ketligi to'g'riligini tekshirish
+    const isCorrect = userBlocks.length === currentLesson.correctOrder.length &&
+                      userBlocks.every((val, i) => val === currentLesson.correctOrder[i]);
+
+    if (isCorrect) {
+        score += 10;
+        document.getElementById("score").innerText = score;
+        resultMsg.innerText = "🎉 To'g'ri! Barakalla! ➡️ Keyingi dars yuklanmoqda...";
+        resultMsg.style.color = "#2ecc71";
+
+        currentLessonIdx++;
+        if (currentLessonIdx < dragDatabase.length) {
+            setTimeout(loadDragLesson, 2000);
+        } else {
+            setTimeout(() => {
+                alert("🎉 Tabriklaymiz! Siz barcha 20 ta sudrab o'rganish darslarini muvaffaqiyatli yakunladingiz!");
+                currentLessonIdx = 0;
+                score = 0;
+                document.getElementById("score").innerText = score;
+                loadDragLesson();
+            }, 2000);
+        }
+    } else {
+        resultMsg.innerText = "❌ Noto'g'ri, bloklar tartibini qayta o'ylab ko'r!";
+        resultMsg.style.color = "#e74c3c";
+    }
+        // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
+    }
+
+};
+
+// O'yinni ilk bor ishga tushirish
+loadDragLesson();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">Aqlli Bolajon - Bosh sahifa</title>
+    <!-- Font Awesome ikonkalari uchun havola -->
+    <link rel="stylesheet" href="https://cloudflare.com">
+    
+</head>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background: #f0f4f8; color: #333; }
+
+/* Navbar */
+nav { background: #1a252f; padding: 15px 50px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.nav-logo { color: #fff; font-size: 24px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+.nav-right { display: flex; align-items: center; gap: 30px; }
+.nav-links { display: flex; gap: 25px; list-style: none; }
+.nav-links a { color: #ecf0f1; text-decoration: none; font-size: 16px; font-weight: 500; transition: 0.3s; }
+.nav-links a:hover { color: #2ecc71; }
+#lang-select { padding: 6px 10px; border-radius: 5px; border: none; font-size: 14px; cursor: pointer; outline: none; background: #fff; }
+
+/* Header */
+header { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; text-align: center; padding: 70px 20px; box-shadow: inset 0 -5px 15px rgba(0,0,0,0.05); }
+header h1 { font-size: 38px; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+header p { font-size: 18px; opacity: 0.9; }
+
+/* Bo'limlar strukturasi */
+.container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+.section-block { background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 40px; }
+.section-title { font-size: 24px; margin-bottom: 25px; color: #2c3e50; border-bottom: 3px solid #f1f2f6; padding-bottom: 10px; display: flex; align-items: center; gap: 12px; }
+
+/* Karta dizayni */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+.card { background: #f8f9fa; border-radius: 12px; overflow: hidden; border: 1px solid #e9ecef; text-align: center; padding-bottom: 25px; transition: all 0.3s ease; }
+.card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.card-image-placeholder { height: 140px; display: flex; justify-content: center; align-items: center; color: white; font-size: 50px; }
+.card h3 { margin: 20px 0 15px; font-size: 20px; color: #2c3e50; }
+
+/* Ranglar */
+.bg-blue { background: linear-gradient(135deg, #3498db, #2980b9); }
+.bg-orange { background: linear-gradient(135deg, #e67e22, #d35400); }
+.bg-green { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+.bg-purple { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+.bg-red { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+.bg-teal { background: linear-gradient(135deg, #1abc9c, #16a085); }
+.text-amber { color: #f1c40f; }
+.text-blue { color: #3498db; }
+.text-green { color: #2ecc71; }
+.text-red { color: #e74c3c; }
+.text-pink { color: #e1306c; }
+
+/* Tugma */
+.btn { display: inline-block; background: #f1c40f; color: #2c3e50; padding: 10px 35px; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
+.btn:hover { background: #f39c12; color: #fff; transform: scale(1.05); }
+
+/* Footer */
+footer { background: #1a252f; color: #bdc3c7; text-align: center; padding: 30px 20px; margin-top: 60px; font-size: 15px; line-height: 1.6; }
+footer a { color: #2ecc71; text-decoration: none; transition: 0.2s; }
+footer a:hover { color: #27ae60; text-decoration: underline; }
+.footer-links { margin-bottom: 12px; }
+.footer-links a { margin: 0 15px; color: #fff; font-weight: 500; }
+/* Card ichidagi img tegi uchun maxsus va chiroyli stillar */
+img {
+    width: 100%;
+    height: 180px; /* Rasmlar balandligi bir xil bo'ladi */
+    object-fit: cover; /* Rasm cho'zilib ketmaydi, chiroyli kesiladi */
+    border-bottom: 3px solid #f1f2f6; /* Rasm va matn orasiga chiziq */
+    transition: transform 0.4s ease; /* Kattalashish effekti tezligi */
+}
+
+/* Karta ustiga sichqoncha kelganda rasm biroz kattalashadi (Effekt) */
+.card:hover img {
+    transform: scale(1.05);
+}
+/* === SMARTFON VA PLANSHETLAR UCHUN ADAPTIV STILLAR === */
+
+/* 1. Planshetlar uchun (Ekrani 992px dan kichik bo'lsa) */
+@media (max-width: 992px) {
+    nav {
+        padding: 15px 30px; /* Navbar chetidagi joy biroz kamayadi */
+    }
+    .container {
+        padding: 0 15px;
+    }
+}
+
+/* 2. Kichik planshetlar va katta telefonlar uchun (Ekrani 768px dan kichik bo'lsa) */
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column; /* Logotip, linklar va til tanlash ketma-ket tushadi */
+        gap: 15px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .nav-right {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+    }
+    
+    .nav-links {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap; /* Linklar sig'masa pastga tushadi */
+        gap: 15px;
+    }
+
+    header {
+        padding: 50px 15px; /* Header balandligi qisqaradi */
+    }
+
+    header h1 {
+        font-size: 28px; /* Sarlavha harfi kichrayadi */
+    }
+
+    header p {
+        font-size: 16px;
+    }
+
+    .section-title {
+        font-size: 20px; /* Bo'lim nomlari harfi kichrayadi */
+    }
+    
+    .section-block {
+        padding: 20px 15px;
+    }
+}
+
+/* 3. Kichik smartfonlar uchun (Ekrani 480px dan kichik bo'lsa) */
+@media (max-width: 480px) {
+    .nav-links {
+        gap: 10px;
+    }
+    
+    .nav-links a {
+        font-size: 14px; /* Link harflari kichrayadi */
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+
+    /* Kartalar telefon ekranida 1 ta ustun bo'lib joylashadi */
+    .grid {
+        grid-template-columns: 1fr; 
+        gap: 20px;
+    }
+
+    .card img {
+        height: 150px; /* Rasmlar balandligi telefonga moslanadi */
+    }
+
+    .card h3 {
+        font-size: 18px;
+    }
+
+    footer {
+        padding: 25px 10px;
+        font-size: 13px;
+    }
+
+    .footer-links a {
+        display: block; /* Footer linklari telefon tikka tushadi */
+        margin: 8px 0;
+    }
+}
+  /* Reyting qatorlari uchun chiroyli stillar */
+    .rank-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #f5eeeb; font-size: 16px; font-weight: bold; align-items: center; }
+    .rank-row.user-row { background: #e8f8f5; border-radius: 10px; color: #27ae60; border: 2px solid #2ecc71; }
+    .rank-badge { width: 30px; height: 30px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; font-size: 14px; color: white; }
+    .rank-1 { background: #f1c40f; } .rank-2 { background: #bdc3c7; } .rank-3 { background: #e67e22; }
+    .rank-other { background: #34495e; }
+    /* Skrollbarni chiroyli qilish */
+    #leaderboard-list::-webkit-scrollbar { width: 6px; }
+    #leaderboard-list::-webkit-scrollbar-thumb { background: #f1c40f; border-radius: 10px; }
+    .avatar-opt:hover { transform: scale(1.3); }
+
+
+</style>
+<body>
+
+    <!-- Navbar -->
+    <nav>
+        <div class="nav-logo"><i class="fas fa-brain text-amber"></i> Aqlli Bolajon</div>
+        <div class="nav-right">
+<!-- 1. Yangilangan Ochko, O'rin va Profil Paneli (Navbarga qo'yiladi) -->
+<div class="nav-leaderboard" style="display: flex; align-items: center; gap: 15px; background: #fffde7; padding: 5px 15px; border-radius: 20px; border: 2px solid #f1c40f; font-weight: bold; color: #d35400;">
+    <!-- Profil Rasmi va Ismi (Bosganda profil sozlamasi ochiladi) -->
+    <div onclick="openProfileModal()" style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #fff; padding: 3px 10px; border-radius: 15px; border: 1px solid #e67e22;">
+        <span id="nav-user-avatar" style="font-size: 20px;">👦</span>
+        <span id="nav-user-name" style="color: #2c3e50; font-size: 14px;">O'yinchi</span>
+    </div>
+    <div>🏆 <span id="user-current-rank">50</span>-o'rin</div>
+    <div>💎 <span id="user-global-score">0</span> ball</div>
+    <button onclick="openLeaderboardModal()" style="background: #e67e22; color: white; border: none; padding: 5px 10px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: bold;"><i class="fas fa-list-ol"></i></button>
+</div>
+
+<!-- 2. Ro'yxatdan o'tish va Profilni tahrirlash oynasi (Modal) -->
+<div id="profile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; justify-content: center; align-items: center; padding: 20px;">
+    <div style="background: white; width: 100%; max-width: 400px; border-radius: 24px; border: 4px solid #3498db; padding: 25px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <h2 id="profile-title" style="color: #2980b9; margin-bottom: 20px;">📝 Profil Anketasi</h2>
+        
+        <!-- Tanlangan rasm ko'rinishi -->
+        <div id="selected-avatar-display" style="font-size: 70px; margin-bottom: 15px; background: #eaf2f8; width: 100px; height: 100px; display: inline-flex; justify-content: center; align-items: center; border-radius: 50%; border: 3px solid #3498db;">👦</div>
+        
+        <!-- Avatar tanlash paneli -->
+        <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 8px;">O'zingizga rasm tanlang:</p>
+        <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; background: #f8f9f9; padding: 10px; border-radius: 12px;">
+            <span class="avatar-opt" onclick="selectAvatar('👦')" style="font-size: 30px; cursor: pointer; transition: 0.2s;">👦</span>
+            <span class="avatar-opt" onclick="selectAvatar('👧')" style="font-size: 30px; cursor: pointer; transition: 0.2s;">👧</span>
+            <span class="avatar-opt" onclick="selectAvatar('☠')" style="font-size: 30px; cursor: pointer; transition: 0.2s;">🦊</span>
+            <span class="avatar-opt" onclick="selectAvatar('😎')" style="font-size: 30px; cursor: pointer; transition: 0.2s;">🚀</span>
+            <span class="avatar-opt" onclick="selectAvatar('🦁')" style="font-size: 30px; cursor: pointer; transition: 0.2s;">🦁</span>
+            <span class="avatar-opt" onclick="selectAvatar('👩‍💻')" style="font-size: 30px; cursor: pointer; transition: 0.2s;">🥷</span>
+        </div>
+
+        <!-- Ism kiritish joyi -->
+        <input type="text" id="user-name-input" placeholder="Ismingizni yozing..." style="width: 100%; padding: 12px; font-size: 16px; border: 2px solid #bdc3c7; border-radius: 12px; margin-bottom: 20px; text-align: center; font-weight: bold; color: #2c3e50;">
+        
+        <button onclick="saveProfileData()" style="background: #2ecc71; color: white; border: none; padding: 12px; font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 4px #27ae60;">Saqlash va Boshlash 💾</button>
+    </div>
+</div>
+
+
+            <ul class="nav-links">
+                <li><a href="https://muhriddinq677-gif.github.io/uzgames.site/" target="_blank" data-lang="nav-games">Games</a></li> 
+            </ul>
+
+            <!-- Til tanlash menyusi -->
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 O'zbekcha</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="tr">🇹🇷 Türkçe</option>
+                <option value="de">KR Koreyscha</option>
+            </select>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header>
+        <h1 data-lang="welcome-title">🌟 Xush kelibsiz "Aqlli Bolajon" platformasiga! 🌟</h1>
+        <p data-lang="welcome-sub">Bilimlar dunyosini biz bilan birga o'yinlar orqali kashf eting.</p>
+    </header>
+
+    <!-- Asosiy bo'limlar -->
+    <main class="container">
+        
+        <!-- 1-Bo'lim: Aniq Fanlar va Tillar -->
+        <section class="section-block">
+            <h2 class="section-title"><i class="fas fa-calculator text-blue"></i> <span data-lang="sec-1">1-Bo'lim: Aniq Fanlar va Tillar</span></h2>
+            <div class="grid">
+                <div class="card">
+                   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdqJXYaL_0RiNhMGG0hyygnIZozPYGZ4HMTtk0VRca1w&s" alt="">
+                    <h3 data-lang="card-math">🧮 Matematika</h3>
+                    <a href="matematika.html"  target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+                </div>
+                <div class="card">
+                   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI8N-OrdSYyWxk0epyLkXKo7XpfTrOsczG7ZMlB6LMdw&s=10" alt="">
+                    <h3 data-lang="card-english">🗽 Ingliz tili</h3>
+                    <a href="ingiliztili.html"  target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2-Bo'lim: IT va Texnologiya -->
+        <section class="section-block">
+            <h2 class="section-title"><i class="fas fa-laptop-code text-green"></i> <span data-lang="sec-2">2-Bo'lim: IT va Texnologiya</span></h2>
+            <div class="grid">
+                <div class="card">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBoiuV7xL2MV0_JH2qgkRfEB5Yjav3rX8HMp2IbyBXlQ&s=10" alt="">
+                    <h3 data-lang="card-it">💻 Informatika</h3>
+                    <a href="informatika.html"  target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+                </div>
+                <div class="card">
+                   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8qPb8yKm6xN6sjbR4CahHFU72ImckpuvanaQMrq6MjQ&s=10" alt="">
+                    <h3 data-lang="card-code">🚀 Dasturlash</h3>
+                    <a href="dasturlash.html"  target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3-Bo'lim: Ijodiy Fanlar -->
+        <section class="section-block">
+            <h2 class="section-title"><i class="fas fa-book-open text-red"></i> <span data-lang="sec-3">3-Bo'lim: Ijodiy Fanlar</span></h2>
+            <div class="grid">
+                <div class="card">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwfeTYpnCd0sENpUnr4o_0IADs18uQ1Vb4CSAiapmFRw&s=10" alt="">
+                    <h3 data-lang="card-native">✍️ Ona tili</h3>
+                    <a href="onatili_game.html"  target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+                </div>
+                <div class="card">
+                   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2N77yq29bkfUVtIym4yJ1dh7GDgYtXsUu7LJlviOZ6A&s=10" alt="">
+                    <h3 data-lang="card-reading">📖 Adabiyot</h3>
+                    <a href="adabiyot.html"  target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+                </div>
+            </div>
+        </section>
+        <!-- 4-Bo'lim: Jismoniy tarbiya va Sport -->
+<section class="section-block">
+    <h2 class="section-title"><i class="fas fa-trophy text-amber"></i> <span data-lang="sec-4">4-Bo'lim: Sport turlari</span></h2>
+    <div class="grid">
+        
+        <!-- 1. Shaxmat va Shashka -->
+        <div class="card">
+            <img src="data:image/jpeg;base64,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" alt="Shashka">
+            <h3 data-lang="card-chess-checkers"> Shashka</h3>
+            <a href="shashka.html" target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+        </div>
+
+        <!-- 2. Futbol -->
+        <div class="card">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgdxV28_N0Uvz_NNZikXIEZ5HFkDZR7pqG39MnsPXDrg&s=10" alt="Futbol">
+            <h3 data-lang="card-football">⚽ Futbol Viktorina</h3>
+            <a href="football.html" target="_blank" class="btn" data-lang="btn-play">O'ynash</a>
+        </div>
+
+    </div>
+</section>
+<!--5-bo'lim: tabiat-->
+<!-- 5-Bo'lim: Tabiat -->
+<section class="section-block"> 
+    <h2 class="section-title">
+        <i class="fas fa-leaf text-amber" style="color: #2ecc71;"></i> 
+        <span data-lang="sec-5">5-Bo'lim: Tabiat</span>
+    </h2> 
+    <div class="grid"> 
+        <!-- 1. Atrofimizdagi olam --> 
+        <div class="card"> 
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR20KzLzleBc_fbqaqNrgR17lwyHselluSIyeUNVsmTxw&s=10" alt="Atrofimizdagi olam" style="width: 100%; border-radius: 12px; margin-bottom: 10px;"> 
+            <h3 data-lang="card-olam">🌍 Atrofimizdagi olam</h3> 
+            <a href="olam_game.html" target="_blank" class="btn" data-lang="btn-play">O'ynash</a> 
+        </div> 
+
+        <!-- 2. Tabiiy fanlar --> 
+        <div class="card"> 
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQOpfMmVuu-d9rYBOH3Z8f7rSwIK5_Z1MKkARJOxlNlg&s=10" alt="Tabiiy fanlar" style="width: 100%; border-radius: 12px; margin-bottom: 10px;"> 
+            <h3 data-lang="card-tabiiy">🧪 Tabiiy fanlar</h3> 
+            <a href="tabiiy_game.html" target="_blank" class="btn" data-lang="btn-play">O'ynash</a> 
+        </div> 
+    </div> 
+</section>
+
+
+    </main>
+
+
+        <!-- Reyting Oynasi (Modal) -->
+<div id="leaderboard-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
+    <div style="background: white; width: 100%; max-width: 450px; border-radius: 24px; border: 4px solid #f1c40f; padding: 20px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <h2 style="color: #d35400; margin-bottom: 15px;">🏆 TOP 50 Reyting</h2>
+        <span onclick="closeLeaderboardModal()" style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #7f8c8d;">&times;</span>
+        
+        <!-- Skroll bo'ladigan ro'yxat -->
+        <div id="leaderboard-list" style="max-height: 400px; overflow-y: auto; margin-top: 10px; padding-right: 5px; border-top: 1px solid #eee;">
+            <!-- JS orqali 50 ta o'rin to'ldiriladi -->
+        </div>
+    </div>
+</div>
+
+
+<footer>
+        <div class="footer-links">
+            <a href="privacy.html" data-lang="footer-privacy"><i class="fas fa-shield-alt"></i> Privacy Policy</a> | 
+            <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram text-pink"></i> Instagram: @qurbonov_201102</a>
+        </div>
+        <p>&copy; 2026 Aqlli Bolajon. <span data-lang="footer-copy">Barcha huquqlar himoyalangan.</span></p>
+    </footer>
+
+    <script>
+        // Barcha tillardagi so'zlar bazasi (100% to'liq tarjima)
+const languages = { 
+    uz: { 
+        "title": "Aqlli Bolajon - Bosh sahifa", 
+        "nav-about": "About Me", 
+        "nav-games": "Games", 
+        "nav-assistant": "AI Assistant", 
+        "welcome-title": "🌟 Xush kelibsiz \"Aqlli Bolajon\" platformasiga! 🌟", 
+        "welcome-sub": "Bilimlar dunyosini biz bilan birga o'yinlar orqali kashf eting.", 
+        "sec-1": "1-Bo'lim: Aniq Fanlar va Tillar", 
+        "sec-2": "2-Bo'lim: IT va Texnologiya", 
+        "sec-3": "3-Bo'lim: Ijodiy Fanlar", 
+        "sec-4": "4-Bo'lim: Sport turlari",
+        "card-math": "🧮 Matematika", 
+        "card-english": "🇬🇧 Ingliz tili", 
+        "card-it": "💻 Informatika", 
+        "card-code": "🚀 Dasturlash", 
+        "card-native": "✍️ Ona tili", 
+        "card-reading": "📖 O'qish", 
+        "card-chess-checkers": "👑 Shaxmat va Shashka",
+        "card-football": "⚽ Futbol Viktorina",
+        "btn-play": "O'ynash", 
+        "footer-privacy": "Privacy Policy", 
+        "footer-copy": "Barcha huquqlar himoyalangan.",
+        "sec-5": "5-Bo'lim: Tabiat",
+        "card-olam": "🌍 Atrofimizdagi olam",
+        "card-tabiiy": "🧪 Tabiiy fanlar",
+    }, 
+    en: { 
+        "title": "Smart Kids - Home Page", 
+        "nav-about": "About Me", 
+        "nav-games": "Games", 
+        "nav-assistant": "AI Assistant", 
+        "welcome-title": "🌟 Welcome to the \"Smart Kids\" Platform! 🌟", 
+        "welcome-sub": "Discover the world of knowledge through games with us.", 
+        "sec-1": "Section 1: Exact Sciences and Languages", 
+        "sec-2": "Section 2: IT and Technology", 
+        "sec-3": "Section 3: Creative Subjects", 
+        "sec-4": "Section 4: Sports",
+        "card-math": "🧮 Mathematics", 
+        "card-english": "🇬🇧 English Language", 
+        "card-it": "💻 Computer Science", 
+        "card-code": "🚀 Programming", 
+        "card-native": "✍️ Native Language", 
+        "card-reading": "📖 Reading", 
+        "card-chess-checkers": "👑 Chess & Checkers",
+        "card-football": "⚽ Football Quiz",
+        "btn-play": "Play Game", 
+        "footer-privacy": "Privacy Policy", 
+        "footer-copy": "All rights reserved.",
+        "sec-5": "Section 5: Nature",
+        "card-olam": "🌍 Our Environment",
+        "card-tabiiy": "🧪 Natural Sciences", 
+    }, 
+    ru: { 
+        "title": "Умные Детки - Главная страница", 
+        "nav-about": "Обо мне", 
+        "nav-games": "Игры", 
+        "nav-assistant": "ИИ Ассистент", 
+        "welcome-title": "🌟 Добро пожаловать на платформу \"Умные Детки\"! 🌟", 
+        "welcome-sub": "Откройте для себя мир знаний вместе с нами через игры.", 
+        "sec-1": "Раздел 1: Точные науки и языки", 
+        "sec-2": "Раздел 2: ИТ и технологии", 
+        "sec-3": "Раздел 3: Творческие предметы", 
+        "sec-4": "Раздел 4: Виды спорта",
+        "card-math": "🧮 Математика", 
+        "card-english": "🇬🇧 Английский язык", 
+        "card-it": "💻 Информатика", 
+        "card-code": "🚀 Программирование", 
+        "card-native": "✍️ Родной язык", 
+        "card-reading": "📖 Чтение", 
+        "card-chess-checkers": "👑 Шахматы и Шашки",
+        "card-football": "⚽ Футбольная викторина",
+        "btn-play": "Играть", 
+        "footer-privacy": "Политика конфиденциальности", 
+        "footer-copy": "Все права защищены.",
+        "sec-5": "Раздел 5: Природа",
+        "card-olam": "🌍 Окружающий мир",
+        "card-tabiiy": "🧪 Естественные науки", 
+    }, 
+    tr: { 
+        "title": "Akıllı Çocuklar - Ana Sayfa", 
+        "nav-about": "Hakkımda", 
+        "nav-games": "Oyunlar", 
+        "nav-assistant": "Yapay Zeka", 
+        "welcome-title": "🌟 \"Akıllı Çocuklar\" Platformuna Hoş Geldiniz! 🌟", 
+        "welcome-sub": "Bizimle oyunlar aracılığıyla bilgi dünyasını keşfedin.", 
+        "sec-1": "Bölüm 1: Pozitif Bilimler ve Diller", 
+        "sec-2": "Bölüm 2: BT ve Teknoloji", 
+        "sec-3": "Bölüm 3: Yaratıcı Dersler", 
+        "sec-4": "Bölüm 4: Spor Dalları",
+        "card-math": "🧮 Matematik", 
+        "card-english": "🇬🇧 İngilizce", 
+        "card-it": "💻 Bilişim", 
+        "card-code": "🚀 Programlama", 
+        "card-native": "✍️ Ana Dili", 
+        "card-reading": "📖 Okuma", 
+        "card-chess-checkers": "👑 Satranç ve Dama",
+        "card-football": "⚽ Futbol Bilgi Yarışması",
+        "btn-play": "Oyna", 
+        "footer-privacy": "Gizlilik Politikası", 
+        "footer-copy": "Tüm hakları saklıdır.",
+        "sec-5": "5. Bölüm: Doğa",
+        "card-olam": "🌍 Çevremiz",
+        "card-tabiiy": "🧪 Doğa Bilimleri", 
+    }, 
+ ko: { 
+    "title": "똑똑한 아이들 - 홈 페이지", 
+    "nav-about": "About Me", 
+    "nav-games": "Games", 
+    "nav-assistant": "AI Assistant", 
+    "welcome-title": "🌟 \"똑똑한 아이들\" 플랫폼에 오신 것을 환영합니다! 🌟", 
+    "welcome-sub": "우리와 함께 게임을 통해 지식의 세계를 발견해 보세요.", 
+    "sec-1": "제1부: 기초 과학 및 언어", 
+    "sec-2": "제2부: IT 및 기술", 
+    "sec-3": "제3부: 창의 과목", 
+    "sec-4": "제4부: 스포츠 종류",
+    "card-math": "🧮 수학", 
+    "card-english": "🇬🇧 영어", 
+    "card-it": "💻 정보학", 
+    "card-code": "🚀 프로그래밍", 
+    "card-native": "✍️ 모국어", 
+    "card-reading": "📖 독서", 
+    "card-chess-checkers": "👑 체스와 체커",
+    "card-football": "⚽ 축구 퀴즈",
+    "btn-play": "게임하기", 
+    "footer-privacy": "Privacy Policy", 
+    "footer-copy": "모든 권리 보유.",
+    "sec-5": "제5구역: 자연",
+    "card-olam": "🌍 우리 주변의 세계",
+    "card-tabiiy": "🧪 자연 과학", 
+}
+
+};
+
+
+// Tilni almashtirish funksiyasi
+function changeLanguage() {
+    const select = document.getElementById("lang-select");
+    const selectedLang = select.value;
+    
+    // HTML sahifasidagi 'data-lang' atributi bor elementlarni topish
+    const elementsToTranslate = document.querySelectorAll("[data-lang]");
+    
+    elementsToTranslate.forEach(element => {
+        const key = element.getAttribute("data-lang");
+        
+        if (languages[selectedLang][key]) {
+            // Agar element sarlavha (title) bo'lsa
+            if (element.tagName === "TITLE") {
+                document.title = languages[selectedLang][key];
+            } else {
+                // Oddiy matn bo'lsa, ichidagi ikonkalar saqlanib qolishi uchun oxirgi so'zni almashtiramiz
+                // Yoki to'g'ridan-to'g'ri matnni o'zini yangilaymiz
+                if (element.children.length > 0 && element.querySelector('span')) {
+                    element.querySelector('span').innerText = languages[selectedLang][key];
+                } else {
+                    element.innerText = languages[selectedLang][key];
+                }
+            }
+        }
+    });
+}
+// === JONLI REYTING TIZIMI MANTIQI ===
+// === BOTLAR MA'LUMOTLAR BAZASI ===
+const botDatabase = [
+    { name: "Dog", avatar: "🐶" }, { name: "Cat", avatar: "🐱" },
+    { name: "Muhriddin", avatar: "👦" }, { name: "Aziz", avatar: "👶" },
+    { name: "Lion", avatar: "🦁" }, { name: "Tiger", avatar: "🐯" },
+    { name: "Anvar", avatar: "👦" }, { name: "Malika", avatar: "👧" },
+    { name: "Fox", avatar: "🦊" }, { name: "Bear", avatar: "🐻" },
+    { name: "Jasur", avatar: "👦" }, { name: "Laylo", avatar: "👧" },
+    { name: "Wolf", avatar: "🐺" }, { name: "Panda", avatar: "🐼" },
+    { name: "Temur", avatar: "👦" }, { name: "Zilola", avatar: "👧" },
+    { name: "Monkey", avatar: "🐵" }, { name: "Rabbit", avatar: "🐰" },
+    { name: "Otabek", avatar: "👦" }, { name: "Nigora", avatar: "👧" },
+    { name: "Frog", avatar: "🐸" }, { name: "Owl", avatar: "🦉" },
+    { name: "Sardor", avatar: "👦" }, { name: "Diyora", avatar: "👧" },
+    { name: "Koala", avatar: "🐨" }, { name: "Eagle", avatar: "🦅" },
+    { name: "Bobur", avatar: "👦" }, { name: "Kamola", avatar: "👧" },
+    { name: "Deer", avatar: "🦌" }, { name: "Mouse", avatar: "🐭" },
+    { name: "Zafar", avatar: "👦" }, { name: "Feruza", avatar: "👧" },
+    { name: "Horse", avatar: "🐴" }, { name: "Sheep", avatar: "🐑" },
+    { name: "Umid", avatar: "👦" }, { name: "Madina", avatar: "👧" },
+    { name: "Bull", avatar: "🐂" }, { name: "Goat", avatar: "🐐" },
+    { name: "Shokir", avatar: "👦" }, { name: "Gulzoda", avatar: "👧" },
+    { name: "Elephant", avatar: "🐘" }, { name: "Duck", avatar: "🦆" },
+    { name: "Nodir", avatar: "👦" }, { name: "Shirin", avatar: "👧" },
+    { name: "Penguin", avatar: "🐧" }, { name: "Chicken", avatar: "🐔" },
+    { name: "Asror", avatar: "👦" }, { name: "Aziza", avatar: "👧" },
+    { name: "Nilufar", avatar: "👧" }
+];
+
+// === INITIALIZE VARIABLES ===
+let userGlobalScore = parseInt(localStorage.getItem('user_global_score')) || 0;
+let botIncrementCount = parseInt(localStorage.getItem('bot_increment_count')) || 0;
+let savedName = localStorage.getItem('user_profile_name') || "";
+let savedAvatar = localStorage.getItem('user_profile_avatar') || "👦";
+let selectedTempAvatar = savedAvatar;
+
+// Har safar sahifa ochilganda botlar ochkosini oshirish
+if (!sessionStorage.getItem('session_bot_increased')) {
+    botIncrementCount += 5;
+    localStorage.setItem('bot_increment_count', botIncrementCount);
+    sessionStorage.setItem('session_bot_increased', 'true');
+}
+
+// O'yinlardan qaytgan ballarni tekshirish
+let lastGameScore = parseInt(localStorage.getItem('current_game_score')) || 0;
+if (lastGameScore > 0) {
+    userGlobalScore += lastGameScore;
+    localStorage.setItem('user_global_score', userGlobalScore);
+    localStorage.removeItem('current_game_score');
+}
+
+// Leaderboard ro'yxatini shakllantirish
+let leaderboardData = [];
+for (let i = 0; i < 49; i++) {
+    let baseScore = Math.round(1000 - (i * (900 / 48)));
+    leaderboardData.push({
+        name: botDatabase[i].name,
+        avatar: botDatabase[i].avatar,
+        score: baseScore + botIncrementCount,
+        isUser: false
+    });
+}
+
+// Foydalanuvchini qo'shish
+let userProfileObj = {
+    name: savedName || "O'yinchi",
+    avatar: savedAvatar,
+    score: userGlobalScore,
+    isUser: true
+};
+leaderboardData.push(userProfileObj);
+
+// === REYTING VA NAVBARNI YANGILASH ===
+window.updateLeaderboard = function() {
+    const currentName = localStorage.getItem('user_profile_name') || "O'yinchi";
+    const currentAvatar = localStorage.getItem('user_profile_avatar') || "👦";
+
+    let userInList = leaderboardData.find(item => item.isUser);
+    if (userInList) {
+        userInList.name = currentName;
+        userInList.avatar = currentAvatar;
+        userInList.score = userGlobalScore;
+    }
+
+    // Saralash
+    leaderboardData.sort((a, b) => b.score - a.score);
+    let userRank = leaderboardData.findIndex(item => item.isUser) + 1;
+
+    // Navbarni yangilash
+    if (document.getElementById("nav-user-name")) document.getElementById("nav-user-name").innerText = currentName;
+    if (document.getElementById("nav-user-avatar")) document.getElementById("nav-user-avatar").innerText = currentAvatar;
+    if (document.getElementById("user-current-rank")) document.getElementById("user-current-rank").innerText = userRank;
+    if (document.getElementById("user-global-score")) document.getElementById("user-global-score").innerText = userGlobalScore;
+
+    // Ro'yxatni chizish
+    const listContainer = document.getElementById("leaderboard-list");
+    if (listContainer) {
+        let html = "";
+        leaderboardData.forEach((player, index) => {
+            let rank = index + 1;
+            let badgeClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+            let rowClass = player.isUser ? 'rank-row user-row' : 'rank-row';
+            let medal = rank === 1 ? "🥇 " : rank === 2 ? "🥈 " : rank === 3 ? "🥉 " : "";
+
+            html += `
+                <div class="${rowClass}">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="rank-badge ${badgeClass}">${rank}</span>
+                        <span style="font-size: 20px;">${player.avatar}</span>
+                        <span>${medal}${player.name}</span>
+                    </div>
+                    <div style="color: #e67e22;">💎 ${player.score}</div>
+                </div>
+            `;
+        });
+        listContainer.innerHTML = html;
+    }
+}
+
+// === MODAL CONTROL ===
+window.openProfileModal = function() {
+    document.getElementById("user-name-input").value = localStorage.getItem('user_profile_name') || "";
+    selectedTempAvatar = localStorage.getItem('user_profile_avatar') || "👦";
+    document.getElementById("selected-avatar-display").innerText = selectedTempAvatar;
+    document.getElementById("profile-modal").style.display = "flex";
+}
+
+window.selectAvatar = function(avatar) {
+    selectedTempAvatar = avatar;
+    document.getElementById("selected-avatar-display").innerText = avatar;
+}
+
+window.saveProfileData = function() {
+    let inputName = document.getElementById("user-name-input").value.trim();
+    if (inputName === "") {
+        alert("Iltimos, ismingizni kiriting! 😊");
+        return;
+    }
+    localStorage.setItem('user_profile_name', inputName);
+    localStorage.setItem('user_profile_avatar', selectedTempAvatar);
+    document.getElementById("profile-modal").style.display = "none";
+    window.updateLeaderboard();
+}
+
+window.openLeaderboardModal = function() {
+    const modal = document.getElementById("leaderboard-modal");
+    if (modal) {
+        modal.style.display = "flex";
+        window.updateLeaderboard();
+    }
+}
+
+window.closeLeaderboardModal = function() {
+    document.getElementById("leaderboard-modal").style.display = "none";
+}
+
+// Ishga tushirish
+document.addEventListener("DOMContentLoaded", () => {
+    window.updateLeaderboard();
+    if (!localStorage.getItem('user_profile_name')) {
+        window.openProfileModal();
+    }
+});
+
+    </script>
+</body>
+</html>

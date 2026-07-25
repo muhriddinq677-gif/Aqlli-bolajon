@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">💻 Informatika O'yini</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', sans-serif; }
+        body { background: #e8f8f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .game-box { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 12px 35px rgba(0,0,0,0.15); text-align: center; max-width: 550px; width: 100%; border: 4px solid #2ecc71; position: relative; }
+        h1 { color: #27ae60; margin-bottom: 10px; font-size: 26px; }
+        
+        .game-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .mode-btn { padding: 12px; font-size: 15px; border: 2px solid #2ecc71; border-radius: 12px; cursor: pointer; background: #fff; font-weight: bold; transition: 0.2s; color: #27ae60; }
+        .mode-btn.active { background: #2ecc71; color: white; border-color: #27ae60; }
+        
+        .score-box { font-size: 18px; margin-bottom: 15px; color: #27ae60; font-weight: bold; }
+        .display-area { background: #f4f6f7; padding: 20px; border-radius: 16px; margin-bottom: 20px; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 3px dashed #2ecc71; }
+        
+        /* 1-Rejim: Robot yig'ish elementlari */
+        .robot-builder { display: flex; flex-direction: column; gap: 10px; align-items: center; width: 100%; }
+        .part-slot { width: 100px; height: 60px; border: 2px dashed #bdc3c7; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 32px; background: #fff; }
+        .part-slot.filled { border-style: solid; border-color: #2ecc71; background: #e8f8f5; }
+        .parts-pool { display: flex; gap: 15px; margin-top: 15px; background: #fff; padding: 10px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .draggable-part { font-size: 36px; cursor: pointer; transition: transform 0.2s; }
+        .draggable-part:hover { transform: scale(1.2); }
+        
+        /* 2-Rejim: Jihoz nomini yozish */
+        .hardware-img { font-size: 80px; margin-bottom: 15px; }
+        .input-area input { width: 80%; padding: 12px; font-size: 18px; border: 3px solid #cbd5e1; border-radius: 10px; text-align: center; outline: none; margin-bottom: 10px; }
+        .input-area input:focus { border-color: #2ecc71; }
+        .input-area button { background: #2ecc71; color: white; border: none; padding: 12px 30px; font-size: 16px; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 4px #27ae60; }
+        .input-area button:active { transform: translateY(4px); box-shadow: none; }
+        
+        #result { margin-top: 15px; font-size: 22px; font-weight: bold; min-height: 35px; }
+        .back-btn { display: inline-block; margin-top: 25px; color: #7f8c8d; text-decoration: none; font-size: 15px; font-weight: bold; }
+        
+        .top-bar { position: relative; width: 100%; margin-top: 35px; }
+        select { position: absolute; top: -45px; right: 0; padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <div class="top-bar">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="tr">🇹🇷 TR</option>
+                <option value="de">🇩🇪 DE</option>
+            </select>
+        </div>
+
+        <h1 data-lang="title">💻 Informatika O'yini</h1>
+        
+        <div class="game-modes">
+            <button class="mode-btn active" onclick="switchMode(1)" id="mode1-btn" data-lang="m1-title">🤖 Robot Yasash</button>
+            <button class="mode-btn" onclick="switchMode(2)" id="mode2-btn" data-lang="m2-title">⌨️ Jihozni Top</button>
+        </div>
+
+        <div class="score-box"><span data-lang="score">Ball</span>: <span id="score">0</span></div>
+        
+        <div class="display-area" id="main-display">
+            <!-- Dinamik maydon: JS orqali to'ldiriladi -->
+        </div>
+        
+        <div id="result"></div>
+        
+        <!-- Barcha o'yin HTML fayllarida orqaga qaytish tugmasini shunday o'zgartiring: -->
+<a href="index.html" onclick="saveScoreAndGoBack()" class="back-btn">
+    <i class="fas fa-arrow-left"></i> <span>Orqaga qaytish</span>
+</a>
+
+    </div>
+
+    <script >
+  let currentMode = 1; // 1 = Robot Yasash, 2 = Jihozni Top
+let score = 0;
+
+// Robot qismlarini eslab qolish uchun o'zgaruvchilar
+let robotSteps = ["head", "body", "legs", "chip"];
+let currentStepIdx = 0;
+let chosenHead = "";
+let chosenBody = "";
+let chosenLegs = "";
+
+// 2-Rejim uchun jihozlar bazasi
+// 2-Rejim uchun jihozlar bazasi (Eng oson 15 ta savol)
+const hardwareQuestions = [
+    { emoji: "💻", answers: { uz: "kompyuter", en: "computer", ru: "компьютер", tr: "bilgisayar", de: "computer" } },
+    { emoji: "⌨️", answers: { uz: "klaviatura", en: "keyboard", ru: "клавиатура", tr: "klvye", de: "tastatur" } },
+    { emoji: "🖱️", answers: { uz: "sichqoncha", en: "mouse", ru: "мышка", tr: "fare", de: "maus" } },
+    { emoji: "🖨️", answers: { uz: "printer", en: "printer", ru: "принтер", tr: "yazıcı", de: "drucker" } },
+    { emoji: "🎧", answers: { uz: "quloqchin", en: "headphones", ru: "наушники", tr: "kulaklık", de: "kopfhörer" } },
+    { emoji: "📱", answers: { uz: "telefon", en: "phone", ru: "телефон", tr: "telefon", de: "telefon" } },
+    { emoji: "📺", answers: { uz: "televizor", en: "tv", ru: "телевизор", tr: "televizyon", de: "fernseher" } },
+    { emoji: "🔌", answers: { uz: "sim", en: "wire", ru: "провод", tr: "tel", de: "kabel" } },
+    { emoji: "🎙️", answers: { uz: "mikrofon", en: "microphone", ru: "микрофон", tr: "mikrofon", de: "mikrofon" } },
+    { emoji: "📢", answers: { uz: "kolonka", en: "speaker", ru: "колонка", tr: "hoparlör", de: "lautsprecher" } },
+    { emoji: "💽", answers: { uz: "disk", en: "disk", ru: "диск", tr: "disk", de: "disk" } },
+    { emoji: "🔋", answers: { uz: "batareya", en: "battery", ru: "батарейка", tr: "batarya", de: "batterie" } },
+    { emoji: "🎥", answers: { uz: "kamera", en: "camera", ru: "камера", tr: "kamera", de: "kamera" } },
+    { emoji: "🗖", answers: { uz: "oyna", en: "window", ru: "окно", tr: "pencere", de: "fenster" } },
+    { emoji: "🖲️", answers: { uz: "fleshka", en: "flash drive", ru: "флешка", tr: "flash bellek", de: "stick" } }
+];
+
+let currentHardwareIdx = 0;
+
+const langData = {
+    uz: { title: "💻 Informatika O'yini", score: "Ball", "btn-back": "Orqaga qaytish", right: "🎉 To'g'ri! Barakalla!", wrong: "❌ Noto'g'ri, yana urinib ko'r!", "m1-title": "🤖 Robot Yasash", "m2-title": "⌨️ Jihozni Top", "build-head": "Robotga BOSH tanlang:", "build-body": "Robotga TANA tanlang:", "build-legs": "Robotga OYOQ tanlang:", "build-chip": "Zararsiz MIKROCHIPNI toping (Viruslardan ehtiyot bo'ling!):", "virus-alert": "👾 Voy xato! Bu chipda VIRUS bor ekan! Robot buzildi!", "btn-check": "Tekshirish", "placeholder": "Jihoz nomini yozing..." },
+    en: { title: "💻 IT Game", score: "Score", "btn-back": "Go Back", right: "🎉 Correct! Well done!", wrong: "❌ Incorrect, try again!", "m1-title": "🤖 Build a Robot", "m2-title": "⌨️ Guess Hardware", "build-head": "Choose a HEAD for the robot:", "build-body": "Choose a BODY for the robot:", "build-legs": "Choose LEGS for the robot:", "build-chip": "Find a SAFE MICROCHIP (Watch out for Viruses!):", "virus-alert": "👾 Oh no! This chip has a VIRUS! Robot crashed!", "btn-check": "Check", "placeholder": "Type hardware name..." },
+    ru: { title: "💻 Игра Информатика", score: "Баллы", "btn-back": "Назад", right: "🎉 Правильно! Молодец!", wrong: "❌ Неверно, попробуйте еще раз!", "m1-title": "🤖 Собери робота", "m2-title": "⌨️ Угадай деталь", "build-head": "Выберите ГОЛОВУ для робота:", "build-body": "Выберите ТОРС для робота:", "build-legs": "Выберите НОГИ для робота:", "build-chip": "Найдите ЧИСТЫЙ МИКРОЧИП (Осторожно, вирусы!):", "virus-alert": "👾 О нет! В этом чипе ВИРУС! Робот сломался!", "btn-check": "Проверить", "placeholder": "Напишите название..." },
+    tr: { title: "💻 Bilişim Oyunu", score: "Puan", "btn-back": "Geri Dön", right: "🎉 Doğru! Tebrikler!", wrong: "❌ Yanlış, tekrar dene!", "m1-title": "🤖 Robot Yap", "m2-title": "⌨️ Donanımı Bul", "build-head": "Robot için KAFA seçin:", "build-body": "Robot için GÖVDE seçin:", "build-legs": "Robot için BACAK seçin:", "build-chip": "GÜVENLİ MİKROÇİP bulun (Virüslere dikkat!):", "virus-alert": "👾 Olamaz! Bu çipte VİRÜS var! Robot bozuldu!", "btn-check": "Kontrol Et", "placeholder": "Donanım adını yazın..." },
+    de: { title: "💻 IT-Spiel", score: "Punkte", "btn-back": "Zurück", right: "🎉 Richtig! Gut gemacht!", wrong: "❌ Falsch, versuche es nochmals!", "m1-title": "🤖 Roboter bauen", "m2-title": "⌨️ Hardware raten", "build-head": "Wähle einen KOPF für den Roboter:", "build-body": "Wähle einen KÖRPER für den Roboter:", "build-legs": "Wähle BEINE für den Roboter:", "build-chip": "Finde einen SICHEREN MIKROCHIP (Achtung vor Viren!):", "virus-alert": "👾 Oh nein! Dieser Chip hat einen VIRUS! Roboter kaputt!", "btn-check": "Prüfen", "placeholder": "Hardwarenamen eingeben..." }
+};
+
+function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById("mode1-btn").classList.remove("active");
+    document.getElementById("mode2-btn").classList.remove("active");
+    
+    if (mode === 1) {
+        document.getElementById("mode1-btn").classList.add("active");
+        resetRobotGame();
+    } else {
+        document.getElementById("mode2-btn").classList.add("active");
+        currentHardwareIdx = 0;
+        loadHardwareQuestion();
+    }
+}
+// === 1-REJIM: ROBOT YASASH MANTIQI ===
+function resetRobotGame() {
+    currentStepIdx = 0;
+    chosenHead = "❓";
+    chosenBody = "❓";
+    chosenLegs = "❓";
+    loadRobotStep();
+}
+
+function loadRobotStep() {
+    const display = document.getElementById("main-display");
+    const lang = document.getElementById('lang-select').value;
+    
+    let step = robotSteps[currentStepIdx];
+    let instructionText = langData[lang][`build-${step}`];
+    
+    // Robot qanday shakllanayotganini jonli ko'rsatib turish maydoni
+    let robotPreviewHTML = `
+        <div style="font-size: 45px; line-height: 1.1; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 12px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); width: 140px;">
+            <div>${chosenHead}</div>
+            <div>${chosenBody}</div>
+            <div>${chosenLegs}</div>
+        </div>
+    `;
+    
+    let html = robotPreviewHTML + `<p style="font-weight:bold; margin-bottom:15px; color:#2c3e50;">${instructionText}</p>`;
+    
+    if (step === "head") {
+        html += `<div class="parts-pool">
+            <span class="draggable-part" onclick="selectRobotPart('🤖')">🤖</span>
+            <span class="draggable-part" onclick="selectRobotPart('🤠')">🤠</span>
+            <span class="draggable-part" onclick="selectRobotPart('👽')">👽</span>
+        </div>`;
+    } else if (step === "body") {
+        html += `<div class="parts-pool">
+            <span class="draggable-part" onclick="selectRobotPart('👕')">👕</span>
+            <span class="draggable-part" onclick="selectRobotPart('🛡️')">🛡️</span>
+            <span class="draggable-part" onclick="selectRobotPart('📦')">📦</span>
+        </div>`;
+    } else if (step === "legs") {
+        html += `<div class="parts-pool">
+            <span class="draggable-part" onclick="selectRobotPart('🦿')">🦿</span>
+            <span class="draggable-part" onclick="selectRobotPart('🚲')">🚲</span>
+            <span class="draggable-part" onclick="selectRobotPart('🛴')">🛴</span>
+        </div>`;
+    } else if (step === "chip") {
+        html += `<div class="parts-pool">
+            <span class="draggable-part" onclick="selectRobotPart('🟩')">🟩 (Chip A)</span>
+            <span class="draggable-part" onclick="selectRobotPart('🟥')">🟥 (Chip B)</span>
+        </div>`;
+    }
+    
+    display.innerHTML = html;
+}
+
+function selectRobotPart(part) {
+    const resultDiv = document.getElementById('result');
+    const lang = document.getElementById('lang-select').value;
+    
+    if (robotSteps[currentStepIdx] === "head") chosenHead = part;
+    if (robotSteps[currentStepIdx] === "body") chosenBody = part;
+    if (robotSteps[currentStepIdx] === "legs") chosenLegs = part;
+    
+    if (robotSteps[currentStepIdx] === "chip") {
+        if (part === '🟩') {
+            score += 20;
+            document.getElementById('score').innerText = score;
+            resultDiv.innerText = langData[lang].right + " 🚀 Robot muvaffaqiyatli ishga tushdi!";
+            resultDiv.style.color = "#2ecc71";
+            setTimeout(resetRobotGame, 2000);
+        } else {
+            resultDiv.innerText = langData[lang]["virus-alert"];
+            resultDiv.style.color = "#e74c3c";
+            setTimeout(resetRobotGame, 2500);
+        }
+    } else {
+        currentStepIdx++;
+        loadRobotStep();
+    }
+}
+
+// === 2-REJIM: JIHOZ NOMINI TOPISH MANTIQI ===
+function loadHardwareQuestion() {
+    const display = document.getElementById("main-display");
+    const lang = document.getElementById('lang-select').value;
+    
+    if (currentHardwareIdx >= hardwareQuestions.length) {
+        currentHardwareIdx = 0;
+    }
+    
+    let currentQ = hardwareQuestions[currentHardwareIdx];
+    document.getElementById('result').innerText = '';
+    
+    display.innerHTML = `
+        <div class="hardware-img">${currentQ.emoji}</div>
+        <div class="input-area">
+            <input type="text" id="hw-input" placeholder="${langData[lang].placeholder}" autofocus onkeydown="if(event.key==='Enter') checkHardwareAnswer()">
+            <br>
+            <button onclick="checkHardwareAnswer()">${langData[lang]["btn-check"]}</button>
+        </div>
+    `;
+}
+
+function checkHardwareAnswer() {
+    const userInput = document.getElementById("hw-input").value.trim().toLowerCase();
+    const resultDiv = document.getElementById('result');
+    const lang = document.getElementById('lang-select').value;
+    
+    let currentQ = hardwareQuestions[currentHardwareIdx];
+    let correctAnswer = currentQ.answers[lang];
+    
+    if (userInput === correctAnswer) {
+        score += 10;
+        document.getElementById('score').innerText = score;
+        resultDiv.innerText = langData[lang].right;
+        resultDiv.style.color = "#2ecc71";
+        currentHardwareIdx++;
+        setTimeout(loadHardwareQuestion, 1500);
+    } else {
+        resultDiv.innerText = langData[lang].wrong;
+        resultDiv.style.color = "#e74c3c";
+    }
+}
+
+function changeLanguage() {
+    const lang = document.getElementById('lang-select').value;
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        el.innerText = langData[lang][key];
+    });
+    
+    if (currentMode === 1) {
+        loadRobotStep();
+    } else {
+        loadHardwareQuestion();
+    }
+}
+    // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
+    }
+
+// O'yinni birinchi marta ishga tushirish
+switchMode(1);
+
+    </script>
+</body>
+</html>

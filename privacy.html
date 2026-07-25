@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">Privacy Policy - Aqlli Bolajon</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f0f4f8; color: #333; padding: 40px 20px; line-height: 1.6; }
+        .privacy-container { max-width: 700px; background: white; margin: 0 auto; padding: 40px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 6px solid #2ecc71; position: relative; }
+        h1 { color: #2c3e50; margin-bottom: 25px; font-size: 28px; display: flex; align-items: center; gap: 10px; }
+        h2 { color: #2ecc71; margin: 25px 0 10px; font-size: 20px; }
+        p { margin-bottom: 15px; color: #555; }
+        .back-btn { display: inline-block; margin-top: 30px; background: #2ecc71; color: white; padding: 10px 25px; text-decoration: none; border-radius: 25px; font-weight: bold; transition: 0.3s; }
+        .back-btn:hover { background: #27ae60; }
+        select { position: absolute; top: 40px; right: 40px; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="privacy-container">
+        <!-- Til tanlash -->
+        <select id="lang-select" onchange="changeLanguage()">
+            <option value="uz">🇺🇿 UZ</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="ru">🇷🇺 RU</option>
+            <option value="tr">🇹🇷 TR</option>
+            <option value="de">🇩🇪 DE</option>
+        </select>
+
+        <h1 data-lang="p-title"><i class="fas fa-shield-alt"></i> Maxfiylik Siyosati</h1>
+        <p data-lang="p-intro">"Aqlli Bolajon" platformasida biz bolalarning xavfsizligi va maxfiyligini birinchi o'ringa qo'yamiz. Ushbu hujjat saytimizda qanday ma'lumotlar ishlatilishini tushuntiradi.</p>
+        
+        <h2 data-lang="h-data">1. Ma'lumotlarni yig'ish</h2>
+        <p data-lang="p-data">Bizning saytimiz yosh bolalar uchun mo'ljallangan bo'lib, foydalanuvchilardan hech qanday shaxsiy ma'lumotlarni (ism, familiya, telefon raqami yoki manzil) talab qilmaydi va yig'maydi.</p>
+        
+        <h2 data-lang="h-cookies">2. Kesh va xotira (Cookies)</h2>
+        <p data-lang="p-cookies">O'yinlardagi to'plangan ballar va tanlangan til sozlamalari faqat sizning brauzeringiz xotirasida saqlanadi. Bu ma'lumotlar hech qanday serverga yuborilmaydi.</p>
+        
+        <h2 data-lang="h-links">3. Tashqi havolalar</h2>
+        <p data-lang="p-links">Saytimizda muallifning ijtimoiy tarmoqlariga xavfsiz havolalar mavjud. Biz tashqi saytlarning tarkibi va xavfsizligi uchun javobgar emasmiz.</p>
+        
+        <a href="index.html" class="back-btn" data-lang="btn-back"><i class="fas fa-arrow-left"></i> Bosh sahifaga qaytish</a>
+    </div>
+
+    <script>
+        const langData = {
+            uz: {
+                "title": "Privacy Policy - Aqlli Bolajon", "p-title": "Maxfiylik Siyosati",
+                "p-intro": '"Aqlli Bolajon" platformasida biz bolalarning xavfsizligi va maxfiyligini birinchi o\'ringa qo\'yamiz. Ushbu hujjat saytimizda qanday ma\'lumotlar ishlatilishini tushuntiradi.',
+                "h-data": "1. Ma'lumotlarni yig'ish", "p-data": "Bizning saytimiz yosh bolalar uchun mo'ljallangan bo'lib, foydalanuvchilardan hech qanday shaxsiy ma'lumotlarni (ism, familiya, telefon raqami yoki manzil) talab qilmaydi va yig'maydi.",
+                "h-cookies": "2. Kesh va xotira (Cookies)", "p-cookies": "O'yinlardagi to'plangan ballar va tanlangan til sozlamalari faqat sizning brauzeringiz xotirasida saqlanadi. Bu ma'lumotlar hech qanday serverga yuborilmaydi.",
+                "h-links": "3. Tashqi havolalar", "p-links": "Saytimizda muallifning ijtimoiy tarmoqlariga xavfsiz havolalar mavjud. Biz tashqi saytlarning tarkibi va xavfsizligi uchun javobgar emasmiz.",
+                "btn-back": "Bosh sahifaga qaytish"
+            },
+            en: {
+                "title": "Privacy Policy - Smart Kids", "p-title": "Privacy Policy",
+                "p-intro": 'At "Smart Kids" platform, we prioritize children\'s safety and privacy. This document explains how data is used on our website.',
+                "h-data": "1. Data Collection", "p-data": "Our website is designed for young children and does not require or collect any personal data (name, surname, phone number, or address).",
+                "h-cookies": "2. Cache and Storage (Cookies)", "p-cookies": "The scores collected in the games and the selected language settings are only stored in your browser's memory. This data is not sent to any server.",
+                "h-links": "3. External Links", "p-links": "Our website contains safe links to the author's social networks. We are not responsible for the content and security of external sites.",
+                "btn-back": "Go to Home Page"
+            },
+            ru: {
+                "title": "Политика конфиденциальности - Умные Детки", "p-title": "Политика конфиденциальности",
+                "p-intro": 'На платформе "Умные Детки" мы уделяем приоритетное внимание безопасности и конфиденциальности детей. Этот документ объясняет, как данные используются на нашем сайте.',
+                "h-data": "1. Сбор данных", "p-data": "Наш сайт предназначен для маленьких детей and не требует и не собирает никаких личных данных (имя, фамилия, номер телефона или адрес).",
+                "h-cookies": "2. Кэш и память (Cookies)", "p-cookies": "Баллы, набранные в играх, и выбранные языковые настройки хранятся только в памяти вашего браузера. Эти данные не отправляются на какой-либо сервер.",
+                "h-links": "3. Внешние ссылки", "p-links": "Наш сайт содержит безопасные ссылки на социальные сети автора. Мы не несем ответственности за содержание и безопасность внешних сайтов.",
+                "btn-back": "На главную"
+            },
+            tr: {
+                "title": "Gizlilik Politikası - Akıllı Çocuklar", "p-title": "Gizlilik Politikası",
+                "p-intro": '"Akıllı Çocuklar" platformunda çocukların güvenliğine ve gizliliğine öncelik veriyoruz. Bu belge, web sitemizde verilerin nasıl kullanıldığını açıklamaktadır.',
+                "h-data": "1. Veri Toplama", "p-data": "Web sitemiz küçük çocuklar için tasarlanmıştır ve hiçbir kişisel veriyi (isim, soyisim, telefon numarası veya adres) istemez ve toplamaz.",
+                "h-cookies": "2. Önbellek ve Depolama (Çerezler)", "p-cookies": "Oyunlarda toplanan puanlar ve seçilen dil ayarları yalnızca tarayıcınızın belleğinde saklanır. Bu veriler hiçbir sunucuya gönderilmez.",
+                "h-links": "3. Harici Bağlantılar", "p-links": "Web sitemiz yazarın sosyal ağlarına güvenli bağlantılar içermektedir. Harici sitelerin içeriğinden ve güvenliğinden sorumlu değiliz.",
+                "btn-back": "Ana Sayfaya Dön"
+            },
+            ko: {
+                "title": "개인정보 처리방침 - 똑똑한 아이들", 
+                "p-title": "개인정보 처리방침",
+                "p-intro": '"똑똑한 아이들" 플랫폼은 어린이의 안전과 개인정보 보호를 최우선으로 생각합니다. 본 문서는 당사 웹사이트에서 데이터가 어떻게 사용되는지 설명합니다.',
+                "h-data": "1. 데이터 수집", 
+                "p-data": "당사 웹사이트는 어린 아이들을 위해 설계되었으며 어떠한 개인정보(이름, 성, 전화번호 또는 주소)도 요구하거나 수집하지 않습니다.",
+                "h-cookies": "2. 캐시 및 저장소 (쿠키)", 
+                "p-cookies": "게임에서 수집된 점수와 선택한 언어 설정은 브라우저의 메모리에만 저장됩니다. 이 데이터는 어떠한 서버로도 전송되지 않습니다.",
+                "h-links": "3. 외부 링크", 
+                "p-links": "당사 웹사이트에는 제작자의 소셜 네트워크로 연결되는 안전한 링크가 포함되어 있습니다. 당사는 외부 사이트의 콘텐츠와 보안에 대해 책임을 지지 않습니다.",
+                "btn-back": "홈 페이지로 돌아가기"
+}
+
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('lang-select').value;
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                const key = el.getAttribute('data-lang');
+                if (el.tagName === "TITLE") {
+                    document.title = langData[lang][key];
+                } else {
+                    el.innerHTML = langData[lang][key];
+                }
+            });
+        }
+    </script>
+</body>
+</html>

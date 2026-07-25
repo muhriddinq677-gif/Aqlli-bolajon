@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">🧪 Tabiat va Geografiya Laboratoriyasi</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', sans-serif; }
+        body { background: #eaf2f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .game-box { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 12px 35px rgba(0,0,0,0.15); text-align: center; max-width: 650px; width: 100%; border: 4px solid #3498db; position: relative; }
+        h1.main-title { color: #2980b9; margin-bottom: 20px; font-size: 28px; }
+        
+        /* Yuqoridagi 4 ta katta rejim tugmalari */
+        .modes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .mode-btn { background: white; color: #2c3e50; border: 2px solid #bdc3c7; padding: 15px; font-size: 18px; border-radius: 14px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #bdc3c7; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .mode-btn.active { background: #3498db; color: white; border-color: #2980b9; box-shadow: 0 4px #2980b9; }
+        .mode-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .score-box { font-size: 18px; margin-bottom: 15px; color: #2980b9; font-weight: bold; display: flex; justify-content: space-between; background: #ebf5fb; padding: 12px 15px; border-radius: 10px; }
+        
+        /* Savol ko'rsatish maydoni */
+        .question-display { background: #f7f9f9; padding: 25px; border-radius: 16px; margin-bottom: 20px; min-height: 140px; display: flex; justify-content: center; align-items: center; border: 3px dashed #3498db; }
+        .question-display h1 { font-size: 24px; font-weight: bold; color: #2c3e50; line-height: 1.5; }
+        
+        /* 4 ta Variant tugmalari */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .opt-btn { background: #3498db; color: white; border: none; padding: 18px; font-size: 19px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #2980b9; text-align: center; }
+        .opt-btn:hover { background: #2980b9; }
+        .opt-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        #result { margin-top: 15px; font-size: 22px; font-weight: bold; min-height: 35px; text-align: center; }
+        .back-btn { display: inline-block; margin-top: 25px; color: #7f8c8d; text-decoration: none; font-size: 16px; font-weight: bold; }
+        
+        .top-bar { position: relative; width: 100%; margin-top: 35px; }
+        select { position: absolute; top: -45px; right: 0; padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: bold; border: 2px solid #3498db; }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <div class="top-bar">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="tr">🇹🇷 TR</option>
+                <option value="ko">🇰🇷 KO</option>
+            </select>
+        </div>
+
+        <h1 class="main-title" data-lang="title">🧪 Tabiat va Geografiya</h1>
+        
+        <!-- Katta bo'lim tugmalari -->
+        <div class="modes-grid">
+            <button class="mode-btn active" onclick="setMode('kimyofizika')" id="mode-kimyofizika" data-lang="m1-title">🧪 Kimyo & Fizika</button>
+            <button class="mode-btn" onclick="setMode('biologiya')" id="mode-biologiya" data-lang="m2-title">🧬 Biologiya</button>
+            <button class="mode-btn" onclick="setMode('geografiya')" id="mode-geografiya" data-lang="m3-title">🌍 Geografiya</button>
+            <button class="mode-btn" onclick="setMode('formula')" id="mode-formula" data-lang="m4-title">📝 Formula</button>
+        </div>
+
+        <!-- JS kodlari to'g'ri o'qishi uchun sozlangan ID qatorlari -->
+        <div class="score-box">
+            <div><span id="text-question" data-lang="text-question">Jumboq</span>: <span id="current-question-num">1</span></div>
+            <div><span data-lang="score">Ball</span>: <span id="score">0</span></div>
+        </div>
+        
+        <!-- Savol maydoni -->
+        <div class="question-display">
+            <h1 id="question-text">...</h1>
+        </div>
+        
+        <!-- 4 ta variant tugmalari (JS handleButtonClick funksiyasiga ulandi) -->
+        <!-- Buni eski options-grid o'rniga qo'ying -->
+<div class="options-grid">
+    <button class="opt-btn" onclick="checkAnswer(0)" id="opt0">...</button>
+    <button class="opt-btn" onclick="checkAnswer(1)" id="opt1">...</button>
+    <button class="opt-btn" onclick="checkAnswer(2)" id="opt2">...</button>
+    <button class="opt-btn" onclick="checkAnswer(3)" id="opt3">...</button>
+</div>
+
+        
+        <div id="result"></div>
+        
+        <a href="index.html" onclick="saveScoreAndGoBack()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> <span data-lang="btn-back">Orqaga qaytish</span>
+        </a>
+    </div>
+
+    <script>
+                { // Fayl boshlanishi (Boshqa o'yinlar bilan to'qnashuvni oldini olish qobig'i)
+
+    // === GLOBAL O'ZGARUVCHILAR VA HOLATLAR ===
+    let currentMode = 'kimyofizika'; // 'kimyofizika', 'biologiya', 'geografiya', 'formula'
+    let score = 0;
+    let currentQuestionIndex = 0;
+    let currentQuestionData = null;
+
+    // === 1-BO'LIM: KIMYO & FIZIKA REJIMIDAGI TAJRIBALAR (1-5 SAVOLLAR) ===
+    const kimyoFizikaQuestions1 = [
+        {
+            qText: {
+                uz: "🧪 Kimyoviy tajriba: Qizil suyuqlikka 🟥 qaysi rangdagi suyuqlik aralashsa sabzirang (to'q sariq) 🟧 hosil bo'ladi?",
+                en: "🧪 Chemical experiment: Which color liquid mixed with red 🟥 creates orange 🟧?",
+                ru: "🧪 Химический эксперимент: Жидкость какого цвета при смешивании с красной 🟥 дает оранжевый 🟧?",
+                tr: "🧪 Kimyasal deney: Kırmızı sıvıya 🟥 hangi renk sıvı karışırsa turuncu 🟧 oluşur?",
+                ko: "🧪 화학 실험: 빨간색 액체 🟥에 어떤 색 액체를 섞어야 주황색 🟧이 될까요?"
+            },
+            options: {
+                uz: ["Yashil 🟩", "Ko'k 🟦", "Sariq suyuqlik 🟨", "Qora ⬛"],
+                en: ["Green 🟩", "Blue 🟦", "Yellow liquid 🟨", "Black ⬛"],
+                ru: ["Зеленый 🟩", "Синий 🟦", "Желтая жидкость 🟨", "Черный ⬛"],
+                tr: ["Yeşil 🟩", "Mavi 🟦", "Sarı sıvı 🟨", "Siyah ⬛"],
+                ko: ["초록색 🟩", "파란색 🟦", "노란색 액체 🟨", "검은색 ⬛"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🧲 Fizika tajribasi: Kuchli magnit 🧲 stol ustidagi narsalardan qaysi birini o'ziga qattiq tortib yopishtiradi?",
+                en: "🧲 Physics experiment: Which object will a strong magnet 🧲 attract and stick to itself?",
+                ru: "🧲 Физический эксперимент: Какой предмет сильный магнит 🧲 притянет и приклеит к себе?",
+                tr: "🧲 Fizik deneyi: Güçlü bir mıknatıs 🧲 masadaki nesnelerden hangisini kendine çeker?",
+                ko: "🧲 물리학 실험: 강력한 자석 🧲은 테이블 위의 물건 중 어느 것을 끌어당길까요?"
+            },
+            options: {
+                uz: ["Yog'och qoshiq 🪵", "Temir kalit 🔑", "Plastmassa o'yinchoq 🧸", "Qog'oz varog'i 📄"],
+                en: ["Wooden spoon 🪵", "Iron key 🔑", "Plastic toy 🧸", "Paper sheet 📄"],
+                ru: ["Деревянная ложка 🪵", "Железный ключ 🔑", "Пластиковая игрушка 🧸", "Лист бумаги 📄"],
+                tr: ["Ahşap kaşık 🪵", "Demir anahtar 🔑", "Plastik oyuncak 🧸", "Kağıt parçası 📄"],
+                ko: ["나무 숟가락 🪵", "철쇠 열쇠 🔑", "플라스틱 장난감 🧸", "종이 한 장 📄"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧪 Kimyoviy tajriba: Moviy (ko'k) rangli suyuqlikka 🟦 qaysi rang aralashsa chiroyli yashil rangli 🟩 suyuqlik hosil bo'ladi?",
+                en: "🧪 Chemical experiment: Which color mixed with blue 🟦 creates a beautiful green 🟩 liquid?",
+                ru: "🧪 Химический эксперимент: Какой цвет при смешивании с синим 🟦 дает красивый зеленый 🟩 цвет?",
+                tr: "🧪 Kimyasal deney: Mavi sıvıya 🟦 hangi renk karışırsa güzel bir yeşil 🟩 sıvı oluşur?",
+                ko: "🧪 화학 실험: 파란색 액체 🟦에 어떤 색을 섞어야 예쁜 초록색 🟩 액체가 될까요?"
+            },
+            options: {
+                uz: ["Oq ⬜", "Sariq suyuqlik 🟨", "Qizil 🟥", "Binafsha 🟪"],
+                en: ["White ⬜", "Yellow liquid 🟨", "Red 🟥", "Purple 🟪"],
+                ru: ["Белый ⬜", "Желтая жидкость 🟨", "Красный 🟥", "Фиолетовый 🟪"],
+                tr: ["Beyaz ⬜", "Sarı sıvı 🟨", "Kırmızı 🟥", "Mor 🟪"],
+                ko: ["흰색 ⬜", "노란색 액체 🟨", "빨간색 🟥", "보라색 🟪"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧲 Fizika mantiqi: Quyidagi suyuqliklardan qaysi biri muzlatgichga qo'yilganda eng tez muzlab qattiq holatga keladi?",
+                en: "🧲 Physics logic: Which of the following liquids freezes into a solid state fastest when put in the freezer?",
+                ru: "🧲 Физическая логика: Какая из следующих жидкостей быстрее всего замерзает до твердого состояния в морозильнике?",
+                tr: "🧲 Fizik mantığı: Aşağıdaki sıvılardan hangisi dondurucuya konulduğunda en hızlı katı hale gelir?",
+                ko: "🧲 물리학 논리: 다음 액체 중 냉동실에 넣었을 때 가장 빨리 고체 상태로 얼어붙는 것은 무엇일까요?"
+            },
+            options: {
+                uz: ["Oddiy suv 💧", "Shirin sharbat 🧃", "O'simlik yog'i 🫗", "Tuzli suv 🧂"],
+                en: ["Plain water 💧", "Sweet juice 🧃", "Vegetable oil 🫗", "Salty water 🧂"],
+                ru: ["Обычная вода 💧", "Сладкий сок 🧃", "Растительное масло 🫗", "Соленая вода 🧂"],
+                tr: ["Normal su 💧", "Tatlı meyve suyu 🧃", "Bitkisel yağ 🫗", "Tuzlu su 🧂"],
+                ko: ["일반 물 💧", "달콤한 주스 🧃", "식용유 🫗", "소금물 🧂"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🧪 Kimyoviy tajriba: Sariq 🟨 va qizil 🟥 suyuqliklarni aralashtirib unga ko'k 🟦 rang qo'shsak, qaysi rang hosil bo'ladi?",
+                en: "🧪 Chemical experiment: If we mix yellow 🟨 and red 🟥, and then add blue 🟦, what color do we get?",
+                ru: "🧪 Химический эксперимент: Если смешать желтую 🟨 и красную 🟥 жидкости, а затем добавить синюю 🟦, какой цвет получится?",
+                tr: "🧪 Kimyasal deney: Sarı 🟨 ve kırmızı 🟥 sıvıları karıştırıp üzerine mavi 🟦 renk eklersek hangi renk oluşur?",
+                ko: "🧪 화학 실험: 노란색 🟨과 빨간색 🟥 액체를 섞은 후 파란색 🟦을 더하면 어떤 색이 될까요?"
+            },
+            options: {
+                uz: ["Jigarrang 🟫", "Oq ⬜", "Och ko'k 🩵", "Pushti 🦩"],
+                en: ["Brown 🟫", "White ⬜", "Light blue 🩵", "Pink 𦦩"],
+                ru: ["Коричневый 🟫", "Белый ⬜", "Голубой 🩵", "Розовый 🦩"],
+                tr: ["Kahverengi 🟫", "Beyaz ⬜", "Açık mavi 🩵", "Pembe 🦩"],
+                ko: ["갈색 🟫", "흰색 ⬜", "하늘색 🩵", "분홍색 🦩"]
+            },
+            answer: 0
+        }
+    ];
+    // === KIMYO & FIZIKA REJIMIDAGI TAJRIBALAR (6-10 SAVOLLAR) ===
+    const kimyoFizikaQuestions2 = [
+        {
+            qText: {
+                uz: "🌋 Tabiat reaksiyasi: Vulqon tog'ini ⛰️ uyg'otib, ko'piklar otilib chiqishi uchun unga soda bilan birga nima quyish kerak?",
+                en: "🌋 Nature reaction: What should you pour with baking soda into a volcano ⛰️ to make it erupt with foam?",
+                ru: "🌋 Природная реакция: Что нужно налить вместе с содой в вулкан ⛰️, чтобы он запенился и извергся?",
+                tr: "🌋 Doğa reaksiyonu: Bir yanardağın ⛰️ köpürerek patlaması için karbonatla birlikte ne dökülmelidir?",
+                ko: "🌋 자연 반응: 화산 ⛰️ 모형에 베이킹 소다와 함께 무엇을 부어야 거품이 폭발할까요?"
+            },
+            options: {
+                uz: ["Oddiy suv 💧", "Sut o'simligi 🥛", "Sirka (Kislota) 🧪", "Suyuq moy 🫗"],
+                en: ["Plain water 💧", "Milk 🥛", "Vinegar (Acid) 🧪", "Liquid oil 🫗"],
+                ru: ["Обычная вода 💧", "Молоко 🥛", "Уксус (Кислота) 🧪", "Жидкое масло 🫗"],
+                tr: ["Normal su 💧", "Süt 🥛", "Sirke (Asit) 🧪", "Sıvı yağ 🫗"],
+                ko: ["일반 물 💧", "우유 🥛", "식초 (산성) 🧪", "식용유 🫗"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🧲 Fizika tajribasi: Muzlagan muz bo'lagi 🧊 issiq quyosh nuri ostida qolganda qaysi holatga o'tadi?",
+                en: "🧲 Physics experiment: What state does an ice cube 🧊 turn into under hot sunlight?",
+                ru: "🧲 Физический эксперимент: В какое состояние переходит кубик льда 🧊 под горячим солнцем?",
+                tr: "🧲 Fizik deneyi: Buz küpü 🧊 sıcak güneş ışığı altında hangi hale dönüşür?",
+                ko: "🧲 물리학 실험: 얼음 조각 🧊이 뜨거운 햇빛 아래 있을 때 어떤 상태로 변할까요?"
+            },
+            options: {
+                uz: ["Suyuqlik (Suv) 💧", "Gaz (Bug')", "Qattiq tosh 🪨", "Olov 🔥"],
+                en: ["Liquid (Water) 💧", "Gas (Steam)", "Solid stone 🪨", "Fire 🔥"],
+                ru: ["Жидкость (Вода) 💧", "Газ (Пар)", "Твердый камень 🪨", "Огонь 🔥"],
+                tr: ["Sıvı (Su) 💧", "Gaz (Buhar)", "Katı taş 🪨", "Ateş 🔥"],
+                ko: ["액체 (물) 💧", "기체 (수증기)", "단단한 돌 🪨", "불 🔥"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🧪 Kimyoviy tajriba: Oq rangli sutga 🥛 bir tomchi qizil buyoq 🟥 tomizilsa, qanday rang hosil bo'ladi?",
+                en: "🧪 Chemical experiment: If a drop of red dye 🟥 is added to white milk 🥛, what color is formed?",
+                ru: "🧪 Химический эксперимент: Если в белое молоко 🥛 капнуть каплю красного красителя 🟥, какой цвет получится?",
+                tr: "🧪 Kimyasal deney: Beyaz süte 🥛 bir damla kırmızı boya 🟥 damlatılırsa hangi renk oluşur?",
+                ko: "🧪 화학 실험: 흰색 우유 🥛에 빨간색 물감 🟥을 한 방울 떨어뜨리면 어떤 색이 될까요?"
+            },
+            options: {
+                uz: ["Yashil 🟩", "Ko'k 🟦", "Pushti 🌸", "Sariq 🟨"],
+                en: ["Green 🟩", "Blue 🟦", "Pink 🌸", "Yellow 🟨"],
+                ru: ["Зеленый 🟩", "Синий 🟦", "Розовый 🌸", "Желтый 🟨"],
+                tr: ["Yeşil 🟩", "Mavi 🟦", "Pembe 🌸", "Sarı 🟨"],
+                ko: ["초록색 🟩", "파란색 🟦", "분홍색 🌸", "노란색 🟨"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🧲 Fizika qonuni: To'pni ⚽ osmonga baland qilib tepganimizda, u nima sababdan yana yerga qaytib tushadi?",
+                en: "🧲 Physics law: When we kick a ball ⚽ high into the sky, why does it fall back to the ground?",
+                ru: "🧲 Физический закон: Когда мы пинаем мяч ⚽ высоко в небо, почему он падает обратно на землю?",
+                tr: "🧲 Fizik kanunu: Topu ⚽ gökyüzüne yüksek fırlattığımızda, neden tekrar yere düşer?",
+                ko: "🧲 물리학 법칙: 공을 ⚽ 하늘 높이 차올렸을 때, 왜 다시 땅으로 떨어질까요?"
+            },
+            options: {
+                uz: ["Shamol kuchi uchun 💨", "Yerning tortish kuchi 🌍", "Quyosh issiqligi ☀️", "Bulutlar sababli ☁️"],
+                en: ["Because of wind 💨", "Earth's gravity 🌍", "Solar heat ☀️", "Because of clouds ☁️"],
+                ru: ["Из-за ветра 💨", "Гравитация Земли 🌍", "Солнечное тепло ☀️", "Из-за облаков ☁️"],
+                tr: ["Rüzgar yüzünden 💨", "Yerçekimi 🌍", "Güneş ısısı ☀️", "Bulutlar yüzünden ☁️"],
+                ko: ["바람의 힘 때문에 💨", "지구의 중력 🌍", "태양열 ☀️", "구름 때문에 ☁️"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧪 Kimyoviy tajriba: Issiq choyga ☕ bir bo'lak shakar 🟨 solib aralashtirganimizda shakar nima bo'ladi?",
+                en: "🧪 Chemical experiment: What happens to a sugar cube 🟨 when we stir it into hot tea ☕?",
+                ru: "🧪 Химический эксперимент: Что происходит с кусочком сахара 🟨, когда мы размешиваем его в горячем чае ☕?",
+                tr: "🧪 Kimyasal deney: Sıcak çaya ☕ bir küp şeker 🟨 atıp karıştırdığımızda şeker ne olur?",
+                ko: "🧪 화학 실험: 뜨거운 차에 ☕ 설탕 조각 🟨을 넣고 저으면 설탕은 어떻게 될까요?"
+            },
+            options: {
+                uz: ["Muzlab qoladi 🧊", "Erib ketadi (Eriydi) 🫗", "Qattiqlashadi 🪨", "Yonib ketadi 🔥"],
+                en: ["Freezes 🧊", "Dissolves 🫗", "Hardens 🪨", "Burns 🔥"],
+                ru: ["Замерзает 🧊", "Растворяется 🫗", "Твердеет 🪨", "Сгорает 🔥"],
+                tr: ["Donar 🧊", "Erir 🫗", "Katılaşır 🪨", "Yanar 🔥"],
+                ko: ["얼어붙습니다 🧊", "녹아버립니다 🫗", "단단해집니다 🪨", "타버립니다 🔥"]
+            },
+            answer: 1
+        }
+    ];
+    // === KIMYO & FIZIKA REJIMIDAGI TAJRIBALAR (11-15 SAVOLLAR) ===
+    const kimyoFizikaQuestions3 = [
+        {
+            qText: {
+                uz: "🧪 Kimyoviy mantiq: Agar oddiy toza suvni 💧 olovda 🔥 uzoq vaqt qaynatsak, u qaysi holatga aylanadi?",
+                en: "🧪 Chemical logic: If we boil plain water 💧 on fire 🔥 for a long time, what does it turn into?",
+                ru: "🧪 Химическая логика: Если долго кипятить обычную воду 💧 на огне 🔥, во что она превратится?",
+                tr: "🧪 Kimyasal mantık: Normal suyu 💧 ateşte 🔥 uzun süre kaynatırsak neye dönüşür?",
+                ko: "🧪 화학적 논리: 일반 깨끗한 물을 💧 불 위에서 🔥 오랫동안 끓이면 어떤 상태로 변할까요?"
+            },
+            options: {
+                uz: ["Suv bug'i (Gaz) 💨", "Muz bo'lagi 🧊", "Tosh 🪨", "Yog'och 🪵"],
+                en: ["Water vapor (Gas) 💨", "Ice cube 🧊", "Stone 🪨", "Wood 🪵"],
+                ru: ["Водяной пар (Газ) 💨", "Кубик льда 🧊", "Камень 🪨", "Дерево 🪵"],
+                tr: ["Su buharı (Gaz) 💨", "Buz küpü 🧊", "Taş 🪨", "Odun 🪵"],
+                ko: ["수증기 (기체) 💨", "얼음 조각 🧊", "돌 🪨", "나무 🪵"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🧲 Fizika tajribasi: Quyidagi narsalardan qaysi biri qorong'i xonada o'zidan yorug'lik chiqarib, atrofni yoritadi?",
+                en: "🧲 Physics experiment: Which of the following objects emits light and illuminates a dark room?",
+                ru: "🧲 Физический эксперимент: Какой из следующих предметов излучает свет и освещает темную комнату?",
+                tr: "🧲 Fizik deneyi: Aşağıdaki nesnelerden hangisi karanlık bir odada ışık saçarak etrafı aydınlatır?",
+                ko: "🧲 물리학 실험: 다음 중 어두운 방에서 스스로 빛을 내어 주변을 밝히는 것은 무엇일까요?"
+            },
+            options: {
+                uz: ["Ko'zguli oyna 🪞", "Yonib turgan chiroq 💡", "Kitob sahifasi 📖", "Plastmassa qoshiq 🥄"],
+                en: ["Mirror 🪞", "Lit light bulb 💡", "Book page 📖", "Plastic spoon 🥄"],
+                ru: ["Зеркало 🪞", "Горящая лампочка 💡", "Страница книги 📖", "Пластиковая ложка 🥄"],
+                tr: ["Ayna 🪞", "Yanan lamba 💡", "Kitap sayfası 📖", "Plastik kaşık 🥄"],
+                ko: ["거울 🪞", "켜진 전등 💡", "책 페이지 📖", "플라스틱 숟가락 🥄"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧪 Kimyoviy mantiq: Quyidagi moddalardan qaysi birini suvga solib aralashtirsak, u suvda butunlay erib yo'q bo'lib ketadi?",
+                en: "🧪 Chemical logic: Which of the following substances will completely dissolve and disappear when mixed in water?",
+                ru: "🧪 Химическая логика: Какое из следующих веществ полностью растворится и исчезнет, если размешать его в воде?",
+                tr: "🧪 Kimyasal mantık: Aşağıdaki maddelerden hangisini suya atıp karıştırırsak suda tamamen eriyip kaybolur?",
+                ko: "🧪 화학적 논리: 다음 물질 중 물에 넣고 저었을 때 물속에서 완전히 녹아 사라지는 것은 무엇일까요?"
+            },
+            options: {
+                uz: ["Mayda toshlar 🪨", "Osh tuzi 🧂", "Daryo qumi ⏳", "Plastmassa bo'lagi 🧩"],
+                en: ["Small stones 🪨", "Table salt 🧂", "River sand ⏳", "Plastic piece 🧩"],
+                ru: ["Мелкие камни 🪨", "Поваренная соль 🧂", "Речной песок ⏳", "Пластиковый кусочек 🧩"],
+                tr: ["Küçük taşlar 🪨", "Yemek tuzu 🧂", "Nehir kumu ⏳", "Plastik parçası 🧩"],
+                ko: ["작은 돌멩이 🪨", "소금 🧂", "강모래 ⏳", "플라스틱 조각 🧩"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧲 Fizika tajribasi: Quyosh nurini maxsus shisha (prizma) orqali o'tkazganimizda, u nechta kamalak ranglariga ajraladi?",
+                en: "🧲 Physics experiment: When we pass sunlight through a special glass (prism), into how many rainbow colors does it split?",
+                ru: "🧲 Физический эксперимент: Когда мы пропускаем солнечный свет через специальное стекло (призму), на сколько цветов радуги он распадается?",
+                tr: "🧲 Fizik deneyi: Güneş ışığını özel bir camdan (prizma) geçirdiğimizde kaç gökkuşağı rengine ayrılır?",
+                ko: "🧲 물리학 실험: 햇빛을 특수한 유리(프리즘)에 통과시키면 몇 가지 무지개 색으로 나뉠까요?"
+            },
+            options: {
+                uz: ["3 ta", "5 vaqt", "7 ta rang 🌈", "10 ta"],
+                en: ["3", "5", "7 colors 🌈", "10"],
+                ru: ["3", "5", "7 цветов 🌈", "10"],
+                tr: ["3", "5", "7 renk 🌈", "10"],
+                ko: ["3개", "5개", "7가지 색상 🌈", "10개"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🧪 Kimyoviy mantiq: Temir eshik yoki mix 🔩 uzoq vaqt yomg'ir ostida (nam havodan) qolib ketsa, uning yuzasida nima hosil bo'ladi?",
+                en: "🧪 Chemical logic: If an iron door or nail 🔩 is left under rain (in wet air) for a long time, what forms on its surface?",
+                ru: "🧪 Химическая логика: Если железная дверь или гвоздь 🔩 надолго останутся под дождем (во влажном воздухе), что образуется на их поверхности?",
+                tr: "🧪 Kimyasal mantık: Demir bir kapı veya çivi 🔩 uzun süre yağmur altında (nemli havada) kalırsa yüzeyinde ne oluşur?",
+                ko: "🧪 화학적 논리: 철문이나 철못이 🔩 오랫동안 빗물(습한 공기)에 노출되면 표면에 무엇이 생길까요?"
+            },
+            options: {
+                uz: ["Muz qatlami 🧊", "Zang (Tilla rang kukun) 🪞", "Oltin qatlami ✨", "Ko'pikli sovun 🫧"],
+                en: ["Ice layer 🧊", "Rust 🪞", "Gold layer ✨", "Soapy foam 🫧"],
+                ru: ["Слой льда 🧊", "Ржавчина 🪞", "Слой золота ✨", "Мыльная пена 🫧"],
+                tr: ["Buz tabakası 🧊", "Pas 🪞", "Altın tabakası ✨", "Sabun köpüğü 🫧"],
+                ko: ["얼음 층 🧊", "녹 (붉은 갈색 가루) 🪞", "금 층 ✨", "비누 거품 🫧"]
+            },
+            answer: 1
+        }
+    ];
+
+    // Barcha 15 ta Kimyo va Fizika savollarini bitta massivga to'g'ri birlashtirish
+    const fullKimyoFizikaDatabase = kimyoFizikaQuestions1.concat(kimyoFizikaQuestions2, kimyoFizikaQuestions3);
+    // === 2-BO'LIM: BIOLOGIYA REJIMIDAGI SAVOLLAR (1-5 SAVOLLAR) ===
+    const biologiyaQuestions1 = [
+        {
+            qText: {
+                uz: "🧬 Biologiya zanjiri: Inson tanasida nafas olish uchun o'pka 🫁 javob beradi. Butun tanaga qon haydash 🩸 vazifasini qaysi a'zo bajaradi?",
+                en: "🧬 Biology chain: Lungs 🫁 are responsible for breathing. Which organ pumps blood 🩸 through the body?",
+                ru: "🧬 Биологическая цепочка: Легкие 🫁 отвечают за дыхание. Какой орган качает кровь 🩸 по всему телу?",
+                tr: "🧬 Biyoloji zinciri: İnsan vücudunda nefes almaktan akciğerler 🫁 sorumludur. Vücuda kan pompalama 🩸 görevini hangi organ yapar?",
+                ko: "🧬 생물학 학습: 인간의 몸에서 호흡은 폐 🫁가 담당합니다. 온몸에 피를 순환시키는 🩸 장기는 어디일까요?"
+            },
+            options: {
+                uz: ["Yurak 🫀", "Oshqozon 🫁", "Miya 🧠", "Ko'z 👀"],
+                en: ["Heart 🫀", "Stomach 🫁", "Brain 🧠", "Eye 👀"],
+                ru: ["Сердце 🫀", "Желудок 🫁", "Мозг 🧠", "Глаз 👀"],
+                tr: ["Kalp 🫀", "Mide 🫁", "Beyin 🧠", "Göz 👀"],
+                ko: ["심장 🫀", "위장 🫁", "뇌 🧠", "눈 👀"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya tajribasi: Daraxt va o'simliklarning yashil barglari 🍃 quyosh nuri ostida biz nafas olishimiz uchun qanday muhim gazni havoga chiqaradi?",
+                en: "🧬 Biology experiment: Green leaves 🍃 of trees and plants release which important gas into the air under sunlight for us to breathe?",
+                ru: "🧬 Биологический эксперимент: Зеленые листья 🍃 деревьев и растений на солнечном свету выделяют в воздух какой важный газ для нашего дыхания?",
+                tr: "🧬 Biyoloji deneyi: Ağaçların ve bitkilerin yeşil yaprakları 🍃 güneş ışığı altında nefes almamız için havaya hangi önemli gazı salar?",
+                ko: "🧬 생물학 실험: 나무와 식물의 초록색 잎 🍃은 햇빛을 받아 우리가 숨을 쉴 수 있도록 어떤 중요한 가스를 공기 중에 내보낼까요?"
+            },
+            options: {
+                uz: ["Azot gazi 🌬️", "Vodorod gazi 🫧", "Kislorod gazi 💨", "Is gazi 💨"],
+                en: ["Nitrogen 🌬️", "Hydrogen 🫧", "Oxygen gas 💨", "Carbon monoxide 💨"],
+                ru: ["Азот 🌬️", "Водород 🫧", "Кислород 💨", "Угарный газ 💨"],
+                tr: ["Azot 🌬️", "Hidrojen 🫧", "Oksijen gazı 💨", "Karbonmonoksit 💨"],
+                ko: ["질소 🌬️", "수소 🫧", "산소 가스 💨", "일산화탄소 💨"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya mantiqi: Biz eb yuradigan mazali mevalar va sabzavotlar o'simlikning qaysi qismidan rivojlanib hosil bo'ladi?",
+                en: "🧬 Biology logic: From which part of a plant do delicious fruits and vegetables develop and grow?",
+                ru: "🧬 Биологическая логика: Из какой части растения развиваются и растут вкусные фрукты и овощи?",
+                tr: "🧬 Biyoloji mantığı: Yediğimiz lezzetli meyveler ve sebzeler bitkinin hangi kısmından gelişip oluşur?",
+                ko: "🧬 생물학 논리: 우리가 먹는 맛있는 과일과 채소는 식물의 어느 부분에서 발달하여 만들어질까요?"
+            },
+            options: {
+                uz: ["Ildizidan 🪵", "Guli va tugunchasidan 🌸", "Tikanidan 🌵", "Qurigan bargidan 🍂"],
+                en: ["From roots 🪵", "From flowers and ovaries 🌸", "From thorns 🌵", "From dry leaves 🍂"],
+                ru: ["Из корня 🪵", "Из цветка и завязи 🌸", "Из шипов 🌵", "Из сухих листьев 🍂"],
+                tr: ["Kökünden 🪵", "Çiçek ve yumurtalığından 🌸", "Dikeninden 🌵", "Kuru yaprağından 🍂"],
+                ko: ["뿌리에서 🪵", "꽃과 씨방에서 🌸", "가시에서 🌵", "마른 잎에서 🍂"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya olami: Ertalab quyosh chiqqan tomonga qarab o'z boshini buradigan mashhur sariq gul qaysi?",
+                en: "🧬 Biology world: Which famous yellow flower turns its head to face the sun in the morning?",
+                ru: "🧬 Биологический мир: Какой известный желтый цветок поворачивает свою голову к солнцу по утрам?",
+                tr: "🧬 Biyoloji dünyası: Sabahları yüzünü güneşe doğru çeviren ünlü sarı çiçek hangisidir?",
+                ko: "🧬 생물학 세계: 아침에 태양이 뜨는 방향을 향해 고개를 돌리는 유명한 노란색 꽃은 무엇일까요?"
+            },
+            options: {
+                uz: ["Atorgul 🌹", "Lola 🌷", "Knebof (Kungaboqar) 🌻", "Binafsha 🪻"],
+                en: ["Rose 🌹", "Tulip 🌷", "Sunflower 🌻", "Violet 🪻"],
+                ru: ["Роза 🌹", "Тюльпан 🌷", "Подсолнух 🌻", "Фиалка 🪻"],
+                tr: ["Gül 🌹", "Lale 🌷", "Ayçiçeği 🌻", "Menekşe 🪻"],
+                ko: ["장미 🌹", "튤립 🌷", "해바라기 🌻", "제비꽃 🪻"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya mantiqi: Tirik o'simliklar va daraxtlar tuproqdan suv hamda ozuqalarni o'zlarining qaysi a'zosi orqali ichib oladi?",
+                en: "🧬 Biology logic: Through which organ do living plants and trees absorb water and nutrients from the soil?",
+                ru: "🧬 Биологическая логика: Через какой орган живые растения и деревья впитывают воду и питательные вещества из почвы?",
+                tr: "🧬 Biyoloji mantığı: Canlı bitkiler ve ağaçlar topraktan su ve besinleri hangi organları aracılığıyla emer?",
+                ko: "🧬 생물학 논리: 살아있는 식물과 나무는 토양 속의 물과 영양분을 어느 기관을 통해 흡수할까요?"
+            },
+            options: {
+                uz: ["Yashil barglari 🍃", "Ildizlari 🪵", "Mevasi 🍎", "Chiroyli guli 🌸"],
+                en: ["Green leaves 🍃", "Roots 🪵", "Fruit 🍎", "Beautiful flower 🌸"],
+                ru: ["Зеленые листья 🍃", "Корни 🪵", "Плод 🍎", "Красивый цветок 🌸"],
+                tr: ["Yeşil yaprakları 🍃", "Kökleri 🪵", "Meyvesi 🍎", "Güzel çiçeği 🌸"],
+                ko: ["초록색 잎 🍃", "뿌리 🪵", "과일 🍎", "예쁜 꽃 🌸"]
+            },
+            answer: 1
+        }
+    ];
+    // === BIOLOGIYA REJIMIDAGI SAVOLLAR (6-10 SAVOLLAR) ===
+    const biologiyaQuestions2 = [
+        {
+            qText: {
+                uz: "🧬 Biologiya olami: Bizning fikrlashimiz, harakatlarimiz va hamma tana a'zolarimizni boshqaradigan bosh kompyuter qaysi?",
+                en: "🧬 Biology world: Which main computer controls our thinking, movements, and all body parts?",
+                ru: "🧬 Биологический мир: Какой главный компьютер управляет нашим мышлением, движениями и всеми частями тела?",
+                tr: "Biyoloji dünyası: Düşüncelerimizi, hareketlerimizi ve tüm vücut organlarımızı kontrol eden ana bilgisayar hangisidir?",
+                ko: "🧬 생물학 세계: 우리의 생각, 행동, 그리고 모든 신체 기관을 제어하는 주 컴퓨터는 어디일까요?"
+            },
+            options: {
+                uz: ["Yurak 🫀", "Miya 🧠", "Oshqozon 🫁", "Qo'l ✋"],
+                en: ["Heart 🫀", "Brain 🧠", "Stomach 🫁", "Hand ✋"],
+                ru: ["Сердце 🫀", "Мозг 🧠", "Желудок 🫁", "Рука ✋"],
+                tr: ["Kalp 🫀", "Beyin 🧠", "Mide 🫁", "El ✋"],
+                ko: ["심장 🫀", "뇌 🧠", "위장 🫁", "손 ✋"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya olami: Dunyodagi eng mitti hayvonot va tabiat jonzotlari (masalan, mikorblarni) ko'rish uchun laboratoriyada qaysi asbobdan foydalaniladi?",
+                en: "🧬 Biology world: Which instrument is used in the laboratory to see the world's smallest living things and microbes?",
+                ru: "🧬 Биологический мир: Какой прибор используется в лаборатории, чтобы увидеть мельчайших живых существ и микробов?",
+                tr: "Biyoloji dünyası: Dünyadaki en küçük canlıları ve mikropları görmek için laboratuvarda hangi cihaz kullanılır?",
+                ko: "🧬 생물학 세계: 세상에서 가장 작은 생물과 미생물을 보기 위해 실험실에서 사용하는 장비는 무엇일까요?"
+            },
+            options: {
+                uz: ["Durbin (Binokl) 🥽", "Mikroskop 🔬", "Ko'zoynak 👓", "Katta oyna 🪞"],
+                en: ["Binoculars 🥽", "Microscope 🔬", "Glasses 👓", "Large mirror 🪞"],
+                ru: ["Бинокль 🥽", "Микроскоп 🔬", "Очки 👓", "Большое зеркало 🪞"],
+                tr: ["Dürbün 🥽", "Mikroskop 🔬", "Gözlük 👓", "Büyük ayna 🪞"],
+                ko: ["쌍안경 🥽", "현미경 🔬", "안경 👓", "큰 거울 🪞"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya mantiqi: Quyidagi hayvonlardan qaysi biri qish fasli kelganda to'g'ri o'z uyasiga kirib, bahorgacha uzoq uxlashga (gubernatsiyaga) ketadi?",
+                en: "🧬 Biology logic: Which of the following animals goes into its den when winter comes and sleeps until spring?",
+                ru: "🧬 Биологическая логика: Какое из следующих животных с приходом зимы уходит в свою берлогу и спит до весны?",
+                tr: "Biyoloji mantığı: Aşağıdaki hayvanlardan hangisi kış geldiğinde yuvasına girip ilkbahara kadar uzun bir uykuya yatar?",
+                ko: "🧬 생물학 논리: 다음 동물 중 겨울이 오면 자신의 굴에 들어가 봄까지 긴 잠(겨울잠)을 자는 동물은 누구일까요?"
+            },
+            options: {
+                uz: ["Bo'ri 🐺", "Tulkicha 🦊", "Polvon Ayiq 🐻", "Arslon 🦁"],
+                en: ["Wolf 🐺", "Fox 🦊", "Bear 🐻", "Lion 🦁"],
+                ru: ["Волк 🐺", "Лиса 🦊", "Медведь 🐻", "Лев 🦁"],
+                tr: ["Kurt 🐺", "Tilki 🦊", "Ayı 🐻", "Aslan 🦁"],
+                ko: ["늑대 🐺", "여우 🦊", "곰 🐻", "사자 🦁"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya mantiqi: Kapalaklar 🦋 go'zal kashfiyotga aylanishdan oldin, hayotining boshida qanday mitti jonzot shaklida o'rmalab yurishadi?",
+                en: "🧬 Biology logic: Before butterflies 🦋 become beautiful, what small creature do they crawl as at the beginning of their life?",
+                ru: "🧬 Биологическая логика: Прежде чем бабочки 🦋 станут красивыми, в виде какого маленького существа они ползают в начале жизни?",
+                tr: "Biyoloji mantığı: Kelebekler 🦋 güzel bir canlıya dönüşmeden önce hayatlarının başında hangi küçük canlı şeklinde sürünürler?",
+                ko: "🧬 생물학 논리: 나비가 🦋 아름답게 변하기 전, 생애 초기에는 어떤 작은 생물 형태로 기어 다닐까요?"
+            },
+            options: {
+                uz: ["Chivinchalar 🪰", "Ipak qurti / Kapalak qurti (Gusenitsa) 🐛", "Chumoli 🐜", "Asalari 🐝"],
+                en: ["Flies 🪰", "Caterpillar 🐛", "Ant 🐜", "Bee 🐝"],
+                ru: ["Мухи 🪰", "Гусеница 🐛", "Муравей 🐜", "Пчела 🐝"],
+                tr: ["Sinekler 🪰", "Tırtıl 🐛", "Karınca 🐜", "Arı 🐝"],
+                ko: ["파리 🪰", "애벌레 (누에) 🐛", "개미 🐜", "꿀벌 🐝"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🧬 Biologiya olami: Biz eb yuradigan shirin mevali olma daraxti 🍎 gullaganidan keyin, uning gullarini changlatib meva tugishiga yordam beradigan uchar hasharot qaysi?",
+                en: "🧬 Biology world: Which flying insect helps pollinate apple tree 🍎 flowers so they can grow fruits?",
+                ru: "🧬 Биологический мир: Какое летающее насекомое помогает опылять цветы яблони 🍎, чтобы они могли приносить плоды?",
+                tr: "Biyoloji dünyası: Elma ağacı 🍎 çiçek açtıktan sonra, çiçekleri tozlaştırarak meyve vermesine yardımcı olan uçan böcek hangisidir?",
+                ko: "🧬 생물학 세계: 우리가 먹는 사과나무가 🍎 꽃을 피운 후, 꽃을 수분시켜 열매를 맺도록 도와주는 날아다니는 곤충은 무엇일까요?"
+            },
+            options: {
+                uz: ["Chivinchalar 🪰", "Chaqqon Asalari 🐝", "Chumoli 🐜", "O'rgimchak 🕷️"],
+                en: ["Flies 🪰", "Honeybee 🐝", "Ant 🐜", "Spider 🕷️"],
+                ru: ["Мухи 🪰", "Пчела 🐝", "Муравей 🐜", "Паук 🕷️"],
+                tr: ["Sinekler 🪰", "Bal arısı 🐝", "Karınca 🐜", "Örümcek 🕷️"],
+                ko: ["파리 🪰", "꿀벌 🐝", "개미 🐜", "거미 🕷️"]
+            },
+            answer: 1
+        }
+    ];
+
+    // Barcha 10 ta biologiya savollarini bitta massivga birlashtirish
+    const fullBiologiyaDatabase = biologiyaQuestions1.concat(biologiyaQuestions2);
+    // === 3-BO'LIM: GEOGRAFIYA REJIMIDAGI SAVOLLAR (1-10 BAYROQLAR) ===
+    const geografiyaQuestions1 = [
+        {
+            qText: {
+                uz: "uz Bu qaysi davlatning bayrog'i?",
+                en: "🇺🇿 Which country's flag is this?",
+                ru: "🇺🇿 Флаг какой страны здесь изображен?",
+                tr: "🇺🇿 Bu hangi ülkenin bayrağı?",
+                ko: "🇺🇿 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["O'zbekiston", "Qozog'iston", "Turkiya", "Rossiya"],
+                en: ["Uzbekistan", "Kazakhstan", "Turkey", "Russia"],
+                ru: ["Узбекистан", "Казахстан", "Турция", "Россия"],
+                tr: ["Özbekistan", "Kazakistan", "Türkiye", "Rusya"],
+                ko: ["우즈베키스탄", "카자흐스탄", "터키", "러시아"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🇬🇧 Bu qaysi davlatning bayrog'i?",
+                en: "🇬🇧 Which country's flag is this?",
+                ru: "🇬🇧 Флаг какой страны здесь изображен?",
+                tr: "🇬🇧 Bu hangi ülkenin bayrağı?",
+                ko: "🇬🇧 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["AQSh", "Buyuk Britaniya (Angliya)", "Fransiya", "Germaniya"],
+                en: ["USA", "Great Britain (United Kingdom)", "France", "Germany"],
+                ru: ["США", "Великобритания (Англия)", "Франция", "Германия"],
+                tr: ["ABD", "Birleşik Krallık (İngiltere)", "Fransa", "Almanya"],
+                ko: ["미국", "영국", "프랑스", "독일"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🇷🇺 Bu qaysi davlatning bayrog'i?",
+                en: "🇷🇺 Which country's flag is this?",
+                ru: "🇷🇺 Флаг какой страны здесь изображен?",
+                tr: "🇷🇺 Bu hangi ülkenin bayrağı?",
+                ko: "🇷🇺 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Rossiya", "Ukraina", "Belarus", "Xitoy"],
+                en: ["Russia", "Ukraine", "Belarus", "China"],
+                ru: ["Россия", "Украина", "Беларусь", "Китай"],
+                tr: ["Rusya", "Ukrayna", "Belarus", "Çin"],
+                ko: ["러시아", "우크라이나", "벨라루스", "중국"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🇹🇷 Bu qaysi davlatning bayrog'i?",
+                en: "🇹🇷 Which country's flag is this?",
+                ru: "🇹🇷 Флаг какой страны здесь изображен?",
+                tr: "🇹🇷 Bu hangi ülkenin bayrağı?",
+                ko: "🇹🇷 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["O'zbekiston", "Ozarbayjon", "Turkiya", "Misr"],
+                en: ["Uzbekistan", "Azerbaijan", "Turkey", "Egypt"],
+                ru: ["Узбекистан", "Азербайджан", "Турция", "Египет"],
+                tr: ["Özbekistan", "Azerbaycan", "Türkiye", "Mısır"],
+                ko: ["우즈베키스탄", "아제르바이잔", "터키", "이집트"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🇰🇷 Bu qaysi davlatning bayrog'i?",
+                en: "🇰🇷 Which country's flag is this?",
+                ru: "🇰🇷 Флаг какой страны здесь изображен?",
+                tr: "🇰🇷 Bu hangi ülkenin bayrağı?",
+                ko: "🇰🇷 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Yaponiya", "Koreya (Janubiy Koreya)", "Xitoy", "Vyetnam"],
+                en: ["Japan", "Korea (South Korea)", "China", "Vietnam"],
+                ru: ["Япония", "Корея (Южная Корея)", "Китай", "Вьетнам"],
+                tr: ["Japonya", "Kore (Güney Kore)", "Çin", "Vietnam"],
+                ko: ["일본", "대한민국", "중국", "베트남"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🇺🇸 Bu qaysi davlatning bayrog'i?",
+                en: "🇺🇸 Which country's flag is this?",
+                ru: "🇺🇸 Флаг какой страны здесь изображен?",
+                tr: "🇺🇸 Bu hangi ülkenin bayrağı?",
+                ko: "🇺🇸 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["AQSh (Amerika)", "Kanada", "Braziliya", "Avstraliya"],
+                en: ["USA (America)", "Canada", "Brazil", "Australia"],
+                ru: ["США (Америка)", "Канада", "Бразилия", "Австралия"],
+                tr: ["ABD (Amerika)", "Kanada", "Brezilya", "Avustralya"],
+                ko: ["미국", "캐나다", "브라질", "호주"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🇨🇳 Bu qaysi davlatning bayrog'i?",
+                en: "🇨🇳 Which country's flag is this?",
+                ru: "🇨🇳 Флаг какой страны здесь изображен?",
+                tr: "🇨🇳 Bu hangi ülkenin bayrağı?",
+                ko: "🇨🇳 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Yaponiya", "Hindiston", "Xitoy", "Mo'g'uliston"],
+                en: ["Japan", "India", "China", "Mongolia"],
+                ru: ["Япония", "Индия", "Китай", "Монголия"],
+                tr: ["Japonya", "Hindistan", "Çin", "Moğolistan"],
+                ko: ["일본", "인도", "중국", "몽골"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🇯🇵 Bu qaysi davlatning bayrog'i?",
+                en: "🇯🇵 Which country's flag is this?",
+                ru: "🇯🇵 Флаг какой страны здесь изображен?",
+                tr: "🇯🇵 Bu hangi ülkenin bayrağı?",
+                ko: "🇯🇵 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Xitoy", "Koreya", "Yaponiya", "Tailand"],
+                en: ["China", "Korea", "Japan", "Thailand"],
+                ru: ["Китай", "Корея", "Япония", "Таиланд"],
+                tr: ["Çin", "Kore", "Japonya", "Tayland"],
+                ko: ["중국", "한국", "일본", "태국"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🇩🇪 Bu qaysi davlatning bayrog'i?",
+                en: "🇩🇪 Which country's flag is this?",
+                ru: "🇩🇪 Флаг какой страны здесь изображен?",
+                tr: "🇩🇪 Bu hangi ülkenin bayrağı?",
+                ko: "🇩🇪 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Germaniya", "Fransiya", "Italiya", "Ispaniya"],
+                en: ["Germany", "France", "Italy", "Spain"],
+                ru: ["Германия", "Франция", "Италия", "Испания"],
+                tr: ["Almanya", "Fransa", "İtalya", "İspanya"],
+                ko: ["독일", "프랑스", "이탈리아", "스페인"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🇫🇷 Bu qaysi davlatning bayrog'i?",
+                en: "🇫🇷 Which country's flag is this?",
+                ru: "🇫🇷 Флаг какой страны здесь изображен?",
+                tr: "🇫🇷 Bu hangi ülkenin bayrağı?",
+                ko: "🇫🇷 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Germaniya", "Italiya", "Fransiya", "Belgiya"],
+                en: ["Germany", "Italy", "France", "Belgium"],
+                ru: ["Германия", "Италия", "Франция", "Бельгия"],
+                tr: ["Almanya", "İtalya", "Fransa", "Belçika"],
+                ko: ["독일", "이탈리아", "프랑스", "벨기에"]
+            },
+            answer: 2
+        }
+    ];
+    // === GEOGRAFIYA REJIMIDAGI SAVOLLAR (11-20 BAYROQLAR) ===
+    const geografiyaQuestions2 = [
+        {
+            qText: {
+                uz: "🇮🇹 Bu qaysi davlatning bayrog'i?",
+                en: "🇮🇹 Which country's flag is this?",
+                ru: "🇮🇹 Флаг какой страны здесь изображен?",
+                tr: "🇮🇹 Bu hangi ülkenin bayrağı?",
+                ko: "🇮🇹 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Meksika", "Italiya", "Vengriya", "Eron"],
+                en: ["Mexico", "Italy", "Hungary", "Iran"],
+                ru: ["Мексика", "Италия", "Венгрия", "Иран"],
+                tr: ["Meksika", "İtalya", "Macaristan", "İran"],
+                ko: ["멕시코", "이탈리아", "헝가리", "이란"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🇪🇸 Bu qaysi davlatning bayrog'i?",
+                en: "🇪🇸 Which country's flag is this?",
+                ru: "🇪🇸 Флаг какой страны здесь изображен?",
+                tr: "🇪🇸 Bu hangi ülkenin bayrağı?",
+                ko: "🇪🇸 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Ispaniya", "Portugaliya", "Kolumbiya", "Argentina"],
+                en: ["Spain", "Portugal", "Colombia", "Argentina"],
+                ru: ["Испания", "Португалия", "Колумбия", "Аргентина"],
+                tr: ["İspanya", "Portekiz", "Kolombiya", "Arjantin"],
+                ko: ["스페인", "포르투갈", "콜롬비아", "아르헨티나"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🇧🇷 Bu qaysi davlatning bayrog'i?",
+                en: "🇧🇷 Which country's flag is this?",
+                ru: "🇧🇷 Флаг какой страны здесь изображен?",
+                tr: "🇧🇷 Bu hangi ülkenin bayrağı?",
+                ko: "🇧🇷 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Braziliya", "Yamayka", "Kanada", "Janubiy Afrika"],
+                en: ["Brazil", "Jamaica", "Canada", "South Africa"],
+                ru: ["Бразилия", "Ямайка", "Канада", "ЮАР"],
+                tr: ["Brezilya", "Jamaika", "Kanada", "Güney Afrika"],
+                ko: ["브라질", "자메이카", "캐나다", "남아프리카 공화국"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🇨🇦 Bu qaysi davlatning bayrog'i?",
+                en: "🇨🇦 Which country's flag is this?",
+                ru: "🇨🇦 Флаг какой страны здесь изображен?",
+                tr: "🇨🇦 Bu hangi ülkenin bayrağı?",
+                ko: "🇨🇦 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Peru", "Livan", "Yaponiya", "Kanada"],
+                en: ["Peru", "Lebanon", "Japan", "Canada"],
+                ru: ["Перу", "Ливан", "Япония", "Канада"],
+                tr: ["Peru", "Lübnan", "Japonya", "Kanada"],
+                ko: ["페루", "레바논", "일본", "캐나다"]
+            },
+            answer: 3
+        },
+        {
+            qText: {
+                uz: "🇦🇺 Bu qaysi davlatning bayrog'i?",
+                en: "🇦🇺 Which country's flag is this?",
+                ru: "🇦🇺 Флаг какой страны здесь изображен?",
+                tr: "🇦🇺 Bu hangi ülkenin bayrağı?",
+                ko: "🇦🇺 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Yangi Zelandiya", "Avstraliya", "Fiji", "Tuvalu"],
+                en: ["New Zealand", "Australia", "Fiji", "Tuvalu"],
+                ru: ["Новая Зеландия", "Австралия", "Фиджи", "Тувалу"],
+                tr: ["Yeni Zelanda", "Avustralya", "Fiji", "Tuvalu"],
+                ko: ["뉴질랜드", "호주", "피지", "투발루"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🇮🇳 Bu qaysi davlatning bayrog'i?",
+                en: "🇮🇳 Which country's flag is this?",
+                ru: "🇮🇳 Флаг какой страны здесь изображен?",
+                tr: "🇮🇳 Bu hangi ülkenin bayrağı?",
+                ko: "🇮🇳 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Pokiston", "Eron", "Xitoy", "Hindiston"],
+                en: ["Pakistan", "Iran", "China", "India"],
+                ru: ["Пакистан", "Иран", "Китай", "Индия"],
+                tr: ["Pakistan", "İran", "Çin", "Hindistan"],
+                ko: ["파키스탄", "이란", "중국", "인도"]
+            },
+            answer: 3
+        },
+        {
+            qText: {
+                uz: "🇪🇬 Bu qaysi davlatning bayrog'i?",
+                en: "🇪🇬 Which country's flag is this?",
+                ru: "🇪🇬 Флаг какой страны здесь изображен?",
+                tr: "🇪🇬 Bu hangi ülkenin bayrağı?",
+                ko: "🇪🇬 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Suriya", "Iroq", "Misr", "Yaman"],
+                en: ["Syria", "Iraq", "Egypt", "Yemen"],
+                ru: ["Сирия", "Ирак", "Египет", "Йемен"],
+                tr: ["Suriye", "Irak", "Mısır", "Yemen"],
+                ko: ["시리아", "이라크", "이집트", "예멘"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "🇸🇦 Bu qaysi davlatning bayrog'i?",
+                en: "🇸🇦 Which country's flag is this?",
+                ru: "🇸🇦 Флаг какой страны здесь изображен?",
+                tr: "🇸🇦 Bu hangi ülkenin bayrağı?",
+                ko: "🇸🇦 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["BAA", "Saudiya Arabistoni", "Qatar", "Kuvayt"],
+                en: ["UAE", "Saudi Arabia", "Qatar", "Kuwait"],
+                ru: ["ОАЭ", "Саудовская Аравия", "Катар", "Кувейт"],
+                tr: ["BAE", "Suudi Arabistan", "Katar", "Kuveyt"],
+                ko: ["아랍에미리트", "사우디아라비아", "카타르", "쿠웨이트"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "🇰🇿 Bu qaysi davlatning bayrog'i?",
+                en: "🇰🇿 Which country's flag is this?",
+                ru: "🇰🇿 Флаг какой страны здесь изображен?",
+                tr: "🇰🇿 Bu hangi ülkenin bayrağı?",
+                ko: "🇰🇿 이 국기는 어느 나라의 국기인가요?"
+            },
+            options: {
+                uz: ["Qozog'iston", "Qirg'iziston", "Tojikiston", "Turkmaniston"],
+                en: ["Kazakhstan", "Kyrgyzstan", "Tajikistan", "Turkmenistan"],
+                ru: ["Казахстан", "Кыргызстан", "Таджикистан", "Туркменистан"],
+                tr: ["Kazakistan", "Kırgızistan", "Tacikistan", "Türkmenistan"],
+                ko: ["카자흐스탄", "키르기스스탄", "타지키스탄", "투르크메니스탄"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "🇯登记 Bu qaysi davlatning bayrog'i?", // Emojisi ba'zan tizimga qarab har xil chiqishi mumkin deb JP bayrog'i o'rniga matn
+                uz: "🇯🇵 Bu qaysi davlatning bayrog'i? (Qizil doirali oq bayroq)",
+                en: "🇯🇵 Which country's flag is this? (White with red circle)",
+                ru: "🇯🇵 Флаг какой страны здесь изображен? (Белый с красным кругом)",
+                tr: "🇯🇵 Bu hangi ülkenin bayrağı? (Kırmızı daireli beyaz bayrak)",
+                ko: "🇯🇵 이 국기는 어느 나라의 국기인가요? (흰색 바탕에 빨간 원)"
+            },
+            options: {
+                uz: ["Xitoy", "Yaponiya", "Tailand", "Vyetnam"],
+                en: ["China", "Japan", "Thailand", "Vietnam"],
+                ru: ["Китай", "Япония", "Таиланд", "Вьетнам"],
+                tr: ["Çin", "Japonya", "Tayland", "Vietnam"],
+                ko: ["중국", "일본", "태국", "베트남"]
+            },
+            answer: 1
+        }
+    ];
+
+    // Barcha 20 ta Geografiya savollarini bitta massivga to'g'ri birlashtirish
+    const fullGeografiyaDatabase = geografiyaQuestions1.concat(geografiyaQuestions2);
+    // === 4-BO'LIM: KIMYOVIY FORMULALAR LABORATORIYASI (1-10 SAVOLLAR) ===
+    const formulaQuestions = [
+        {
+            qText: {
+                uz: "📝 Formula: SUV hosil bo'lishi uchun vodorod va kislorod birlashadi: H_O. Chiziq o'rniga qaysi son tushib qolgan?",
+                en: "📝 Formula: Hydrogen and oxygen combine to form WATER: H_O. Which missing number goes in the blank?",
+                ru: "📝 Формула: Водород и кислород соединяются, образуя ВОДУ: H_O. Какая цифра пропущена?",
+                tr: "📝 Formül: SU oluşumu için hidrojen ve oksijen birleşir: H_O. Alttan çizgi yerine hangi sayı gelmelidir?",
+                ko: "📝 공식: 수소와 산소가 결합하여 물이 됩니다: H_O. 밑줄 친 부분에 들어갈 숫자는 무엇인가요?"
+            },
+            options: ["1", "2 (H2O)", "3", "4"],
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Biz nafas chiqaradigan Karbonat angidrid gazi formulasi CO_ ko'rinishida yoziladi. Kislorod yonidagi sonni toping:",
+                en: "📝 Formula: Carbon dioxide gas that we exhale is written as CO_. Find the missing number next to oxygen:",
+                ru: "📝 Формула: Углекислый газ, который мы выдыхаем, пишется как CO_. Найдите пропущенную цифру рядом с кислородом:",
+                tr: "📝 Formül: Soluk verirken çıkardığımız Karbondioksit gazı CO_ şeklinde yazılır. Oksijenin yanındaki eksik sayıyı bulun:",
+                ko: "📝 공식: 우리가 숨을 내쉴 때 나오는 이산화탄소 가스는 CO_로 표기됩니다. 산소 옆에 빠진 숫자를 고르세요:"
+            },
+            options: ["2 (CO2)", "3", "4", "5"],
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Tabiiy gaz tarkibidagi Metan gazi formulasi CH_ shaklida yoziladi. Vodorod (H) yonidagi tushib qolgan sonni toping:",
+                en: "📝 Formula: Methane gas in natural gas is written as CH_. Find the missing number next to hydrogen (H):",
+                ru: "📝 Формула: Метан в природном газе пишется как CH_. Найдите пропущенную цифру рядом с водородом (H):",
+                tr: "📝 Formül: Doğal gazdaki Metan gazı CH_ şeklinde yazılır. Hidrojenin (H) yanındaki eksik sayıyı bulun:",
+                ko: "📝 공식: 천연가스의 주성분인 메탄가스는 CH_로 표기됩니다. 수소(H) 옆에 빠진 숫자를 고르세요:"
+            },
+            options: ["2", "3", "4 (CH4)", "5"],
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Shakar va shirinliklar tarkibidagi Glyukoza formulasi C_H12O6 ko'rinishida yoziladi. Uglerod (C) yonidagi sonni toping:",
+                en: "📝 Formula: Glucose in sugar is written as C_H12O6. Find the missing number next to carbon (C):",
+                ru: "📝 Формула: Глюкоза в сахаре пишется как C_H12O6. Найдите пропущенную цифру рядом с углеродом (C):",
+                tr: "📝 Formül: Şekerlerdeki Glikoz formülü C_H12O6 şeklinde yazılır. Karbonun (C) yanındaki eksik sayıyı bulun:",
+                ko: "📝 공식: 당분에 들어있는 포도당의 공식은 C_H12O6입니다. 탄소(C) 옆에 빠진 숫자를 고르세요:"
+            },
+            options: ["4", "5", "6 (C6H12O6)", "12"],
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Shakar (Glyukoza) formulasi C6H_O6 ko'rinishida bo'lsa, vodorod (H) yoniga qaysi katta son tushib qolgan?",
+                en: "📝 Formula: If glucose is written as C6H_O6, which large number is missing next to hydrogen (H)?",
+                ru: "📝 Формула: Если глюкоза пишется как C6H_O6, какая большая цифра пропущена рядом с водородом (H)?",
+                tr: "📝 Formül: Glikoz formülü C6H_O6 şeklindeyse, hidrojenin (H) yanındaki eksik büyük sayıyı bulun:",
+                ko: "📝 공식: 포도당 공식이 C6H_O6라면, 수소(H) 옆에 빠진 큰 숫자는 무엇인가요?"
+            },
+            options: ["6", "8", "10", "12 (H12)"],
+            answer: 3
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Tibbiyotda ishlatiladigan Vodorod peroksid (perekis) formulasi H2O_ ko'rinishida bo'ladi. Kislorod (O) sonini toping:",
+                en: "📝 Formula: Hydrogen peroxide used in medicine is written as H2O_. Find the number for oxygen (O):",
+                ru: "📝 Формула: Перекись водорода, используемая в медицине, пишется как H2O_. Найдите цифру для кислорода (O):",
+                tr: "📝 Formül: Tıpta kullanılan Hidrojen peroksit H2O_ şeklinde yazılır. Oksijenin (O) sayısını bulun:",
+                ko: "📝 공식: 소독제로 쓰이는 과산화수소 공식은 H2O_입니다. 산소(O) 옆에 들어갈 숫자를 고르세요:"
+            },
+            options: ["1", "2 (H2O2)", "3", "4"],
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Havoning asosiy qismini tashkil qiluvchi Azot gazi molekulasi N_ ko'rinishida yoziladi. Tushib qolgan sonni toping:",
+                en: "📝 Formula: Nitrogen gas, which makes up most of the air, is written as N_. Find the missing number:",
+                ru: "📝 Формула: Газ азот, составляющий большую часть воздуха, пишется как N_. Найдите пропущенную цифру:",
+                tr: "📝 Formül: Havanın çoğunu oluşturan Azot gazı N_ şeklinde yazılır. Eksik sayıyı bulun:",
+                ko: "📝 공식: 공기의 대부분을 차지하는 질소 가스 분자는 N_로 표기됩니다. 빠진 숫자를 고르세요:"
+            },
+            options: ["1", "2 (N2)", "3", "4"],
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Biz nafas oladigan toza Kislorod gazi molekulasi O_ ko'rinishida yoziladi. Kislorod atomlari sonini toping:",
+                en: "📝 Formula: Oxygen gas that we breathe is written as O_. Find the number of oxygen atoms:",
+                ru: "📝 Формула: Кислород, которым мы дышим, пишется как O_. Найдите количество атомов кислорода:",
+                tr: "📝 Formül: Soluduğumuz Oksijen gazı O_ şeklinde yazılır. Oksijen atomu sayısını bulun:",
+                ko: "📝 공식: 우리가 숨 쉬는 산소 가스 분자는 O_로 표기됩니다. 산소 원자의 개수를 고르세요:"
+            },
+            options: ["1", "2 (O2)", "3", "4"],
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Havoning yuqori qatlamidagi ultrabinafsha nurlardan himoya qiluvchi Ozon gazi formulasi O_ ko'rinishida bo'ladi. Sonini toping:",
+                en: "📝 Formula: Ozone gas in the upper atmosphere is written as O_. Find the missing number:",
+                ru: "📝 Формула: Газ озон в верхних слоях атмосферы пишется как O_. Найдите пропущенную цифру:",
+                tr: "📝 Formül: Atmosferin üst katmanındaki Ozon gazı O_ şeklinde yazılır. Eksik sayıyı bulun:",
+                ko: "📝 공식: 자외선을 막아주는 상공의 오존 가스 공식은 O_입니다. 알맞은 숫자를 고르세요:"
+            },
+            options: ["2", "3 (O3)", "4", "5"],
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "📝 Formula: Laboratoriyada ishlatiladigan Sulfat kislota formulasi H_SO4 ko'rinishida yoziladi. Vodorod (H) yonidagi sonni toping:",
+                en: "📝 Formula: Sulfuric acid used in the lab is written as H_SO4. Find the missing number next to hydrogen (H):",
+                ru: "📝 Формула: Серная кислота, используемая в лаборатории, пишется как H_SO4. Найдите цифру рядом с водородом (H):",
+                tr: "📝 Formül: Laboratuvarda kullanılan Sülfürik asit H_SO4 şeklinde yazılır. Hidrojenin (H) yanındaki eksik sayıyı bulun:",
+                ko: "📝 공식: 실험실에서 쓰이는 황산 공식은 H_SO4입니다. 수소(H) 옆에 빠진 숫자를 고르세요:"
+            },
+            options: ["1", "2 (H2SO4)", "3", "4"],
+            answer: 1
+        }
+    ];
+    // === 9-QISM: 5 TILDAGI INTERFEYS TARJIMALARI VA REJIMNI ALMASHTIRISH ===
+    const langData = {
+        uz: { title: "🧪 Tabiat va Geografiya", score: "Ball", "btn-back": "Orqaga qaytish", right: "🎉 To'g'ri! Barakalla!", wrong: "❌ Noto'g'ri, yana urinib ko'r!", "text-question": "Jumboq", "m1-title": "🧪 Kimyo & Fizika", "m2-title": "🧬 Biologiya", "m3-title": "🌍 Geografiya", "m4-title": "📝 Formula" },
+        en: { title: "🧪 Nature & Geography", score: "Score", "btn-back": "Go Back", right: "🎉 Correct! Well done!", wrong: "❌ Incorrect, try again!", "text-question": "Puzzle", "m1-title": "🧪 Chem & Phys", "m2-title": "🧬 Biology", "m3-title": "🌍 Geography", "m4-title": "📝 Formula" },
+        ru: { title: "🧪 Природа и География", score: "Баллы", "btn-back": "Назад", right: "🎉 Правильно! Молодец!", wrong: "❌ Неверно, попробуйте еще раз!", "text-question": "Загадка", "m1-title": "🧪 Хим & Физ", "m2-title": "🧬 Биология", "m3-title": "🌍 География", "m4-title": "📝 Формула" },
+        tr: { title: "🧪 Doğa va Coğrafya", score: "Puan", "btn-back": "Geri Dön", right: "🎉 Doğru! Tebrikler!", wrong: "❌ Yanlış, tekrar dene!", "text-question": "Bulmaca", "m1-title": "🧪 Kimya & Fizik", "m2-title": "🧬 Biyoloji", "m3-title": "🌍 Coğrafya", "m4-title": "📝 Formül" },
+        ko: { title: "🧪 자연과 지리학", score: "점수", "btn-back": "돌아가기", right: "🎉 정답입니다! 잘했어요!", wrong: "❌ 틀렸습니다, 다시 시도해보세요!", "text-question": "퍼즐", "m1-title": "🧪 화학 & 물리", "m2-title": "🧬 생물학", "m3-title": "🌍 지리학", "m4-title": "📝 공식" }
+    };
+
+    // 4 ta katta rejim tugmalari bosilganda ishlaydigan asosiy boshqaruv funksiyasi
+    window.setMode = function(mode) {
+        currentMode = mode;
+        currentQuestionIndex = 0;
+        document.getElementById('result').innerText = '';
+        
+        // Rasmdagi dizayn kabi tanlangan tugmani faollashtirish (ko'k rangga o'tkazish)
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        const targetBtn = document.getElementById(`mode-${mode}`);
+        if (targetBtn) targetBtn.classList.add('active');
+        
+        generateQuestion();
+    }
+    // === 10-QISM: JAVOBLARNI TEKSHIRISH, SAVOLLARNI CHIZISH VA YAKUNIY QAVS ===
+
+    function generateQuestion() {
+        document.getElementById('result').innerText = '';
+        const lang = document.getElementById('lang-select').value;
+
+        // Amaldagi rejimga qarab tegishli ma'lumotlar bazasini tanlash
+        let activeQuestions = fullKimyoFizikaDatabase;
+        if (currentMode === 'biologiya') activeQuestions = fullBiologiyaDatabase;
+        if (currentMode === 'geografiya') activeQuestions = fullGeografiyaDatabase;
+        if (currentMode === 'formula') activeQuestions = formulaQuestions;
+
+        // Agar savollar ro'yxati tugasa, yana boshidan boshlaydi
+        if (currentQuestionIndex >= activeQuestions.length) {
+            currentQuestionIndex = 0;
+        }
+
+        currentQuestionData = activeQuestions[currentQuestionIndex];
+        
+        // Savol raqamini va sarlavhasini yangilash
+        document.getElementById("current-question-num").innerText = currentQuestionIndex + 1;
+        document.getElementById("text-question").innerText = langData[lang]["text-question"];
+
+        // Savol matnini katta h1 ichiga chiqarish
+        document.getElementById("question-text").innerText = currentQuestionData.qText[lang] || currentQuestionData.qText['uz'];
+
+        // 4 ta variant tugmalariga matnlarni joylash
+        for (let i = 0; i < 4; i++) {
+            let opt = currentQuestionData.options;
+            let optionText = "";
+            
+            if (Array.isArray(opt)) {
+                optionText = opt[i];
+            } else {
+                optionText = opt[lang] ? opt[lang][i] : opt['uz'][i];
+            }
+            
+            document.getElementById(`opt${i}`).innerText = optionText;
+        }
+    }
+
+    // Javobni tekshirish funksiyasi (Global oynaga chiqarish)
+    window.checkAnswer = function(selectedIndex) {
+        const resultDiv = document.getElementById('result');
+        const lang = document.getElementById('lang-select').value;
+
+        if (selectedIndex === currentQuestionData.answer) {
+            score += 10;
+            document.getElementById('score').innerText = score;
+            resultDiv.innerText = langData[lang].right;
+            resultDiv.style.color = "#2ecc71";
+            currentQuestionIndex++;
+            setTimeout(generateQuestion, 1500);
+        } else {
+            resultDiv.innerText = langData[lang].wrong;
+            resultDiv.style.color = "#e74c3c";
+        }
+    }
+
+    // Ballarni bosh sahifadagi TOP-50 jonli reytingga yuborish mantiqi
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score);
+    }
+
+    // Tilni almashtirish funksiyasi (Global oynaga chiqarish)
+    window.changeLanguage = function() {
+        const lang = document.getElementById('lang-select').value;
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if(langData[lang][key]) {
+                el.innerText = langData[lang][key];
+            }
+        });
+        generateQuestion();
+    }
+
+    // O'yinni ilk bor yuklash
+    generateQuestion();
+
+} // <--- 10-bo'lakning va butun tabiiy_game.js faylining ENG OXIRGI loyihani xatosiz yopuvchi qavsi!
+
+    </script>
+</body>
+</html>

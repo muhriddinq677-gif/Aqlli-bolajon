@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">📖 O'qish va Adabiyot</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', sans-serif; }
+        body { background: #f4ecf7; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .game-box { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 12px 35px rgba(0,0,0,0.15); text-align: center; max-width: 650px; width: 100%; border: 4px solid #9b59b6; position: relative; }
+        h1.main-title { color: #8e44ad; margin-bottom: 15px; font-size: 28px; }
+        
+        .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .mode-btn { padding: 12px; font-size: 16px; border: 2px solid #9b59b6; border-radius: 12px; cursor: pointer; background: #fff; font-weight: bold; transition: 0.2s; color: #8e44ad; }
+        .mode-btn.active { background: #9b59b6; color: white; border-color: #8e44ad; }
+        
+        .score-box { font-size: 18px; margin-bottom: 15px; color: #27ae60; font-weight: bold; display: flex; justify-content: space-between; background: #f5eeeb; padding: 10px 15px; border-radius: 10px; }
+        .timer-badge { color: #e74c3c; font-weight: bold; }
+
+        /* Matn va Savol Ko'rinishi */
+        .display-area { background: #faf9f6; padding: 25px; border-radius: 16px; margin-bottom: 20px; border: 3px dashed #9b59b6; text-align: left; }
+        .display-area h1 { font-size: 26px; font-weight: bold; color: #2c3e50; line-height: 1.4; margin-bottom: 15px; text-align: center; }
+        
+        /* Tez o'qish uchun maxsus uzun matn oynasi */
+        .story-scroll-box { max-height: 350px; overflow-y: scroll; padding-right: 10px; margin-top: 15px; font-size: 18px; line-height: 1.8; color: #34495e; text-align: justify; border-top: 1px solid #ddd; padding-top: 10px; }
+        
+        /* Taymer Tanlash Paneli */
+        .timer-selector { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
+        .time-btn { background: #3498db; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 10px; cursor: pointer; box-shadow: 0 4px #2980b9; }
+        .time-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* 4 ta Variant tugmalari */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .opt-btn { background: #9b59b6; color: white; border: none; padding: 18px; font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #8e44ad; text-align: center; }
+        .opt-btn:hover { background: #8e44ad; }
+        .opt-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        /* Amaliyot tugmasi */
+        .action-btn { display: block; background: #2ecc71; color: white; border: none; padding: 15px; font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; box-shadow: 0 5px #27ae60; text-align: center; }
+        
+        #result { margin-top: 15px; font-size: 22px; font-weight: bold; min-height: 35px; }
+        .back-btn { display: inline-block; margin-top: 25px; color: #7f8c8d; text-decoration: none; font-size: 16px; font-weight: bold; }
+        
+        .top-bar { position: relative; width: 100%; margin-top: 35px; }
+        select { position: absolute; top: -45px; right: 0; padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <div class="top-bar">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="tr">🇹🇷 TR</option>
+                <option value="ko">🇰🇷 KO</option>
+            </select>
+        </div>
+
+        <h1 class="main-title" data-lang="title">📖 O'qish va Adabiyot</h1>
+        
+        <div class="modes">
+            <button class="mode-btn active" onclick="setMode('maqol')" id="btn-maqol" data-lang="m1-title">🗣️ Maqolni Top</button>
+            <button class="mode-btn" onclick="setMode('reading')" id="btn-reading" data-lang="m2-title">⏱️ Tez O'qish</button>
+        </div>
+
+        <div class="score-box">
+            <div><span data-lang="score">Ball</span>: <span id="score">0</span></div>
+            <div id="timer-container" style="display: none;"><i class="fas fa-clock"></i> <span class="timer-badge" id="timer-countdown">00:00</span></div>
+        </div>
+        
+        <!-- Dinamik o'yin maydoni -->
+        <div class="display-area" id="main-display"></div>
+        
+        <!-- 4 ta variant tugmalari paneli -->
+        <div class="options-grid" id="options-box" style="display: none;">
+            <button class="opt-btn" onclick="checkAnswer(0)" id="opt0">...</button>
+            <button class="opt-btn" onclick="checkAnswer(1)" id="opt1">...</button>
+            <button class="opt-btn" onclick="checkAnswer(2)" id="opt2">...</button>
+            <button class="opt-btn" onclick="checkAnswer(3)" id="opt3">...</button>
+        </div>
+
+        <!-- O'qishni tugatish tugmasi -->
+        <button id="finish-reading-btn" class="action-btn" onclick="stopReadingTimer()" style="display: none;" data-lang="btn-done">O'qib bo'ldim! ✅</button>
+        
+        <div id="result"></div>
+        <!-- Barcha o'yin HTML fayllarida orqaga qaytish tugmasini shunday o'zgartiring: -->
+<a href="index.html" onclick="saveScoreAndGoBack()" class="back-btn">
+    <i class="fas fa-arrow-left"></i> <span>Orqaga qaytish</span>
+</a>
+
+        </div>
+
+    <script>
+        { // Fayl boshlanishi (boshqa o'yinlar bilan to'qnashuvni oldini olish qobig'i)
+
+    // === O'YIN HOLATI O'ZGARUVCHILARI ===
+    let currentMode = 'maqol'; // 'maqol' yoki 'reading'
+    let score = 0;
+    let currentQuestionIndex = 0;
+    let currentQuestionData = null;
+    let countdownInterval = null;
+    let selectedTimeLimit = 60; // soniyalarda
+
+    // === 1-QISM: CHIROYLI VA OSON MAQOLLAR BAZASI (1-5 SAVOLLAR) ===
+    const maqolQuestions = [
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Mehnat, mehnatning tagi — ...'",
+                en: "Complete the proverb: 'Labor is the root of ...'",
+                ru: "Завершите пословицу: 'Труд — основа ...'",
+                tr: "Atasözünü tamamlayın: 'Emek, emeğin sonu ...'",
+                ko: "속담을 완성하세요: '노력은 ...의 근본이다'"
+            },
+            options: ["rohat", "zahmat", "tuhmat", "omad"],
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Ona yurting — ... go'ring'",
+                en: "Complete the proverb: 'Motherland is your ...'",
+                ru: "Завершите пословицу: 'Родина — твоя ...'",
+                tr: "Atasözünü tamamlayın: 'Ana vatanın — ...'",
+                ko: "속담을 완성하세요: '조국은 당신의 ...'"
+            },
+            options: ["oltin", "kumush", "temir", "yashil"],
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Kitob — bilim ...'",
+                en: "Complete the proverb: 'A book is the ... of knowledge'",
+                ru: "Завершите пословицу: 'Книга — ... знаний'",
+                tr: "Atasözünü tamamlayın: 'Kitap — bilginin ...'",
+                ko: "속담을 완성하세요: '책은 지식의 ...이다'"
+            },
+            options: ["guli", "bulog'i", "daryosi", "uyi"],
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Do'st achitib gapirar, dushman — ...'",
+                en: "Complete the proverb: 'A friend speaks bitterly, an enemy — ...'",
+                ru: "Завершите пословицу: 'Друг скажет горькую правду, а враг — ...'",
+                tr: "Atasözünü tamamlayın: 'Dost acı söyler, düşman — ...'",
+                ko: "속담을 완성하세요: '친구는 쓴소리를 하고, 원수는 — ...'"
+            },
+            options: ["kuldirib", "yig'latib", "baqirib", "maqtap"],
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Yaxshi bola — elning ...'",
+                en: "Complete the proverb: 'A good child is the ... of the people'",
+                ru: "Завершите пословицу: 'Хороший ребенок — ... народа'",
+                tr: "Atasözünü tamamlayın: 'İyi çocuk — halkın ...'",
+                ko: "속담을 완성하세요: '착한 아이는 백성의 ...이다'"
+            },
+            options: ["ko'zi", "guli", "yuzi", "so'zi"],
+            answer: 1
+        }
+    ];
+    // === 2-QISM: CHIROYLI VA OSON MAQOLLAR BAZASI (6-10 SAVOLLAR) ===
+    const maqolQuestions2 = [
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Sog'lik — tuman ...'",
+                en: "Complete the proverb: 'Health is a hidden ...'",
+                ru: "Завершите пословицу: 'Здоровье — это ...'",
+                tr: "Atasözünü tamamlayın: 'Sağlık — gizli ...'",
+                ko: "속담을 완성하세요: '건강은 숨겨진 ...이다'"
+            },
+            options: ["boylik", "davlat", "baxt", "orzu"],
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Bugungi ishni ...ga qo'yma'",
+                en: "Complete the proverb: 'Do not put off today's work until ...'",
+                ru: "Завершите пословицу: 'Не откладывай сегодняшнее дело на ...'",
+                tr: "Atasözünü tamamlayın: 'Bugünün işini ...ya bırakma'",
+                ko: "속담을 완성하세요: '오늘 할 일을 ...로 미루지 말라'"
+            },
+            options: ["ertaga", "indinga", "kechga", "haftaga"],
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Ilm — baxt ...'",
+                en: "Complete the proverb: 'Knowledge is the key to ...'",
+                ru: "Завершите пословицу: 'Знание — ключ к ...'",
+                tr: "Atasözünü tamamlayın: 'İlim — mutluluğun ...'",
+                ko: "속담을 완성하세요: '지식은 행복의 ...이다'"
+            },
+            options: ["kaliti", "eshigi", "poydevori", "uyg'onishi"],
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Oz-ozdan o'rganib — ... bo'lur'",
+                en: "Complete the proverb: 'Learning little by little, you become a ...'",
+                ru: "Завершите пословицу: 'Учась понемногу, станешь ...'",
+                tr: "Atasözünü tamamlayın: 'Azar azar öğrenerek — ... olunur'",
+                ko: "속담을 완성하세요: '조금씩 배우다 보면 ...가 된다'"
+            },
+            options: ["ustoz", "dono", "olim", "shogird"],
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "Maqolni to'g'ri so'z bilan yakunlang: 'Tildan kelgan — ...dan kelar'",
+                en: "Complete the proverb: 'What comes from the tongue comes from the ...'",
+                ru: "Завершите пословицу: 'Что идет от языка, идет от ...'",
+                tr: "Atasözünü tamamlayın: 'Dilden gelen — ...den gelir'",
+                ko: "속담을 완성하세요: '말에서 나오는 것은 ...에서 나온다'"
+            },
+            options: ["qo'l", "dil", "bosh", "yurak"],
+            answer: 1
+        }
+    ];
+
+    // Ikkala maqollar bazasini bitta ro'yxatga to'g'ri birlashtirish
+    const fullMaqolDatabase = maqolQuestions.concat(maqolQuestions2);
+    // === 3-QISM: TEZ O'QISH UCHUN 300 TA SO'ZLIK UZUN HIKOYALAR BAZASI ===
+    const readingStories = {
+        uz: `Qadimiy bir shaharchada Alisher ismli juda qiziquvchan bola yashar edi. U har kuni maktabdan qaytgach, bobosining eski va qiziqarli kitoblar bilan to'la kutubxonasiga shoshilardi. Bobosi har doim unga: "O'g'lim, dunyodagi eng katta boylik — bu oltin yoki pul emas, balki kitoblardan olinadigan toza bilimdir", deb takrorlar edi. Alisher bobosining bu gaplarini yurakdan his qilar, har bir sahifani ochganda yangi bir dunyoga kirib qolgandek bo'lardi.
+        
+        Kunlardan bir kuni u kutubxonaning eng chekka burchagidan ustini chang qoplagan, qalin va moviy rangli muqovali sirli kitobni topib oldi. Bu kitob oddiy kitoblarga o'xshamasdi. Uning muqovasida yulduzlar va sehrli naqshlar tasvirlangan edi. Alisher kitobni ehtiyotkorlik bilan ochdi va hayratdan qotib qoldi. Birinchi sahifada uning o'z ismi va bugungi sana yozilgan edi! Kitob xuddi tirikdek, Alisher bilan muloqot qila boshladi.
+        
+        "Xush kelibsiz, yosh qidiruvchi!" — deb yozilgandi keyingi qatorda. "Agar sen ushbu matnlarni diqqat bilan va tez o'qiy olsang, bilimlar dunyosining haqiqiy sehrgari bo'la olasan. Sening kelajaging va muvaffaqiyating hozir qanchalik ko'p va tez ma'lumot o'rganishingga bog'liq." Alisher quvonib ketdi va taymerni yoqib, katta ishtiyoq bilan o'qishni boshladi.
+        
+        U sehrli mamlakatlar, qadimiy kompyuterlar, yulduzlararo sayohatlar va matematika olamining mo'jizalari haqida o'qiy boshladi. Har bir dars va hikoya uning tasavvurini kengaytirardi. Bola matnni o'qigan sari, uning miyasi tezroq va aniqroq fikrlay boshlaganini sezdi. U endi oddiy narsalarga ham boshqacha, dono nigoh bilan qarardi. 
+        
+        Bobosi uning o'qishini ko'rib, jilmydi va: "Dasturchilar, muhandislar va buyuk olimlar hammasi mana shunday tez va ko'p o'qish orqali muvaffaqiyatga erishganlar", dedi. Alisher o'z oldiga katta maqsad qo'ydi: u dunyodagi eng aqlli va foydali inson bo'lib yetishadi. Buning uchun esa har kuni kitob o'qishdan to'xtamaslik kerakligini tushunib yetdi. Sehrli kitob uning eng sodiq do'stiga aylandi.`,
+
+        en: `In a ancient little town, there lived a very curious boy named Alisher. Every day after returning from school, he would rush to his grandfather's library, which was filled with old and fascinating books. His grandfather always repeated to him: "My son, the greatest wealth in the world is not gold or money, but the pure knowledge obtained from books." Alisher felt these words from the bottom of his heart, and every time he opened a page, he felt as if he was entering a whole new world.
+        
+        One day, he found a mysterious book with a dusty, thick, and blue cover in the furthest corner of the library. This book was not like ordinary ones. Its cover was decorated with stars and magical patterns. Alisher carefully opened the book and froze in astonishment. On the first page, his own name and today's date were written! The book began to communicate with Alisher as if it were alive.
+        
+        "Welcome, young seeker!" — was written on the next line. "If you can read these texts carefully and quickly, you can become a real wizard of the world of knowledge. Your future and success depend on how much and how fast you learn information right now." Alisher was overjoyed, turned on the timer, and began reading with great enthusiasm.
+        
+        He began to read about magical lands, ancient computers, interstellar travel, and the wonders of the world of mathematics. Each story and lesson expanded his imagination. As the boy read the text, he noticed that his brain began to think faster and more accurately. He now looked at ordinary things with a different, wiser eye.
+        
+        His grandfather smiled, watching him read, and said: "Programmers, engineers, and great scientists all achieved success through reading fast and much like this." Alisher set a big goal for himself: he would become the smartest and most useful person in the world. And for this, he realized that he should never stop reading books every day. The magic book became his most loyal friend.`,
+
+        ru: `В одном старинном городке жил очень любознательный мальчик по имени Алишер. Каждый день после возвращения из школы он спешил в библиотеку своего дедушки, которая была заполнена старыми и интересными книгами. Дедушка всегда повторял ему: "Сын мой, величайшее богатство в мире — это не золото или деньги, а чистые знания, полученные из книг". Алишер чувствовал эти слова всем сердцем, и каждый раз, открывая страницу, ему казалось, что он попадает в совершенно новый мир.
+        
+        Однажды в самом дальнем углу библиотеки он нашел таинственную книгу с покрытой пылью, толстой и синей обложкой. Эта книга не была похожа на обычные. Ее обложка была украшена звездами и волшебными узорами. Алишер осторожно открыл книгу и замер от изумления. На первой странице были написаны его собственное имя и сегодняшняя дата! Книга начала общаться с Алишером, как будто она была живой.
+        
+        "Добро пожаловать, юный искатель!" — было написано на следующей строке. "Если ты сможешь читать эти тексты внимательно и быстро, ты сможешь стать настоящим волшебником мира знаний. Твое будущее и успех зависят от того, как много и как быстро ты изучаешь информацию прямо сейчас". Алишер обрадовался, включил таймер и начал читать с большим энтузиазмом.
+        
+        Он начал читать о волшебных странах, древних компьютерах, межзвездных путешествиях и чудесах мира математики. Каждая история и урок расширяли его воображение. По мере того как мальчик читал текст, он замечал, что его мозг начинает думать быстрее и точнее. Теперь он смотрел на обычные вещи другим, более мудрым взглядом.
+        
+        Дедушка улыбнулся, глядя на то, как он читает, и сказал: "Программисты, инженеры и великие ученые — все они добились успеха благодаря тому, что читали так же быстро и много". Алишер поставил перед собой большую цель: он станет самым умным и полезным человеком в мире. А для этого он понял, что не должен прекращать читать книги каждый день. Волшебная книга стала его самым верным другом.`
+    };
+    // === 4-QISM: TILLAR PANELI VA REJIM FUNKSIYALARI ===
+    const langData = {
+        uz: { title: "📖 O'qish va Adabiyot", score: "Ball", "btn-back": "Orqaga qaytish", right: "🎉 To'g'ri! Barakalla!", wrong: "❌ Noto'g'ri, yana urinib ko'r!", "m1-title": "🗣️ Maqolni Top", "m2-title": "⏱️ Tez O'qish", "btn-done": "O'qib bo'ldim! ✅", "select-time": "O'qish vaqtini tanlang va boshlang:", "time-min": "daqiqa", "score-msg": "Ajoyib! Siz belgilangan vaqtda matnni muvaffaqiyatli o'qidingiz va +20 ball oldingiz!" },
+        en: { title: "📖 Reading & Literature", score: "Score", "btn-back": "Go Back", right: "🎉 Correct! Well done!", wrong: "❌ Incorrect, try again!", "m1-title": "🗣️ Find Proverb", "m2-title": "⏱️ Speed Reading", "btn-done": "Done Reading! ✅", "select-time": "Select reading time and start:", "time-min": "min", "score-msg": "Great! You successfully read the text in time and got +20 points!" },
+        ru: { title: "📖 Чтение и Литература", score: "Баллы", "btn-back": "Назад", right: "🎉 Правильно! Молодец!", wrong: "❌ Неверно, попробуйте еще раз!", "m1-title": "🗣️ Найди пословицу", "m2-title": "⏱️ Скорочтение", "btn-done": "Я прочитал! ✅", "select-time": "Выберите время чтения и начните:", "time-min": "мин", "score-msg": "Отлично! Вы успешно прочитали текст вовремя и получили +20 баллов!" },
+        tr: { title: "📖 Okuma & Edebiyat", score: "Puan", "btn-back": "Geri Dön", right: "🎉 Doğru! Tebrikler!", wrong: "❌ Yanlış, tekrar dene!", "m1-title": "🗣️ Atasözünü Bul", "m2-title": "⏱️ Hızlı Okuma", "btn-done": "Okumayı Bitirdim! ✅", "select-time": "Okuma süresini seçin ve başlayın:", "time-min": "dk", "score-msg": "Harika! Metni süresi içinde başarıyla okudunuz ve +20 puan kazandınız!" },
+        ko: { title: "📖 독서와 문학", score: "점수", "btn-back": "돌아가기", right: "🎉 정답입니다! 잘했어요!", wrong: "❌ 틀렸습니다, 다시 시도해보세요!", "m1-title": "🗣️ 속담 맞추기", "m2-title": "⏱️ 속독 연습", "btn-done": "다 읽었습니다! ✅", "select-time": "독서 시간을 선택하고 시작하세요:", "time-min": "분", "score-msg": "훌륭합니다! 제한 시간 내에 글을 성공적으로 읽어 +20점을 획득했습니다!" }
+    };
+
+    window.setMode = function(mode) {
+        currentMode = mode;
+        currentQuestionIndex = 0;
+        clearInterval(countdownInterval);
+        document.getElementById("timer-container").style.display = "none";
+        document.getElementById("finish-reading-btn").style.display = "none";
+        
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        const targetBtn = document.getElementById(`btn-${mode}`);
+        if(targetBtn) targetBtn.classList.add('active');
+        
+        generateQuestion();
+    }
+    // === 5-QISM: O'YIN MANTIQLARI, TAYMERLAR VA YAKUNIY QAVS ===
+
+    function generateQuestion() {
+        document.getElementById('result').innerText = '';
+        const lang = document.getElementById('lang-select').value;
+        const mainDisplay = document.getElementById("main-display");
+        const optionsBox = document.getElementById("options-box");
+
+        if (currentMode === 'maqol') {
+            optionsBox.style.display = "grid";
+            
+            if (currentQuestionIndex >= fullMaqolDatabase.length) {
+                currentQuestionIndex = 0;
+            }
+
+            currentQuestionData = fullMaqolDatabase[currentQuestionIndex];
+            mainDisplay.innerHTML = `<h1>${currentQuestionData.qText[lang] || currentQuestionData.qText['uz']}</h1>`;
+
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`opt${i}`).innerText = currentQuestionData.options[i];
+            }
+        } else {
+            // Tez o'qish rejimi (Taymer tanlash paneli)
+            optionsBox.style.display = "none";
+            
+            // Ingliz, rus va o'zbek tillaridan boshqa tillar uchun o'zbekcha matn tanlanadi
+            let storyText = readingStories[lang] || readingStories['uz'];
+            
+            mainDisplay.innerHTML = `
+                <p style="font-weight: bold; color: #8e44ad; font-size: 18px; text-align: center; margin-bottom: 10px;">${langData[lang]["select-time"]}</p>
+                <div class="timer-selector">
+                    <button class="time-btn" onclick="startReadingGame(60)">1 ${langData[lang]["time-min"]}</button>
+                    <button class="time-btn" onclick="startReadingGame(120)">2 ${langData[lang]["time-min"]}</button>
+                    <button class="time-btn" onclick="startReadingGame(180)">3 ${langData[lang]["time-min"]}</button>
+                </div>
+                <div class="story-scroll-box" id="story-text-container" style="display: none;">
+                    ${storyText}
+                </div>
+            `;
+        }
+    }
+
+    // Tez o'qish taymerini ishga tushirish
+    window.startReadingGame = function(seconds) {
+        selectedTimeLimit = seconds;
+        document.getElementById("story-text-container").style.display = "block";
+        document.getElementById("timer-container").style.display = "block";
+        document.getElementById("finish-reading-btn").style.display = "block";
+        document.getElementById('result').innerText = '';
+
+        let timeLeft = selectedTimeLimit;
+        updateTimerDisplay(timeLeft);
+
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay(timeLeft);
+
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                stopReadingTimer();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay(seconds) {
+        let mins = Math.floor(seconds / 60);
+        let secs = seconds % 60;
+        document.getElementById("timer-countdown").innerText = 
+            `${mins < 10 ? '0' + mins : mins}:${secs < 10 ? '0' + secs : secs}`;
+    }
+
+    // O'qib bo'linganda ball berish
+    window.stopReadingTimer = function() {
+        clearInterval(countdownInterval);
+        const lang = document.getElementById('lang-select').value;
+        const resultDiv = document.getElementById('result');
+
+        score += 20; // Tez o'qish muvaffaqiyatli yakunlangani uchun ko'proq ball
+        document.getElementById('score').innerText = score;
+        
+        resultDiv.innerText = langData[lang]["score-msg"];
+        resultDiv.style.color = "#2ecc71";
+
+        document.getElementById("finish-reading-btn").style.display = "none";
+        document.getElementById("timer-container").style.display = "none";
+    }
+
+    // Maqol javobini tekshirish
+    window.checkAnswer = function(selectedIndex) {
+        const resultDiv = document.getElementById('result');
+        const lang = document.getElementById('lang-select').value;
+
+        if (selectedIndex === currentQuestionData.answer) {
+            score += 10;
+            document.getElementById('score').innerText = score;
+            resultDiv.innerText = langData[lang].right;
+            resultDiv.style.color = "#2ecc71";
+            currentQuestionIndex++;
+            setTimeout(generateQuestion, 1500);
+        } else {
+            resultDiv.innerText = langData[lang].wrong;
+            resultDiv.style.color = "#e74c3c";
+        }
+    }
+
+    // Tilni o'zgartirish
+    window.changeLanguage = function() {
+        const lang = document.getElementById('lang-select').value;
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if(langData[lang][key]) {
+                el.innerText = langData[lang][key];
+            }
+        });
+        generateQuestion();
+    }
+
+    // Ilk bor ishga tushirish
+    generateQuestion();
+        // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
+    }
+
+
+} // <--- 5-bo'lakning va butun reading_game.js faylining ENG OXIRGI yopuvchi qavsi!
+
+    </script>
+</body>
+</html>

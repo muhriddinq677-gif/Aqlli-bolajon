@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">🧮 Matematika O'yini</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', sans-serif; }
+        body { background: #eef2f7; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .game-box { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; border: 4px solid #3498db; position: relative; }
+        h1 { color: #2c3e50; margin-bottom: 15px; font-size: 26px; }
+        
+        .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .mode-btn { padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; background: #fff; font-weight: bold; transition: 0.2s; }
+        .mode-btn.active { background: #3498db; color: white; border-color: #2980b9; }
+        
+        .score-box { font-size: 18px; margin-bottom: 15px; color: #27ae60; font-weight: bold; }
+        .emoji-display { font-size: 32px; background: #fffde7; padding: 15px; border-radius: 12px; margin-bottom: 10px; min-height: 80px; display: flex; justify-content: center; align-items: center; word-break: break-all; border: 2px dashed #f1c40f; }
+        .question { font-size: 32px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
+        
+        input { width: 100%; padding: 12px; font-size: 20px; border: 3px solid #cbd5e1; border-radius: 10px; text-align: center; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: #3498db; }
+        
+        button.check-btn { background: #2ecc71; color: white; border: none; padding: 12px; font-size: 18px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; box-shadow: 0 4px #27ae60; }
+        button.check-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        #result { margin-top: 15px; font-size: 20px; font-weight: bold; min-height: 30px; }
+        .back-btn { display: inline-block; margin-top: 20px; color: #7f8c8d; text-decoration: none; font-size: 15px; font-weight: bold; }
+        select { position: absolute; top: -50px; right: 0; padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+        .top-bar { position: relative; width: 100%; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <div class="top-bar">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="tr">🇹🇷 TR</option>
+                <option value="de">🇩🇪 DE</option>
+            </select>
+        </div>
+
+        <h1 data-lang="title">🧮 Matematika O'yini</h1>
+        
+        <div class="modes">
+            <button class="mode-btn active" onclick="setMode('+')" id="btn-add" data-lang="mode-add">➕ Qo'shish</button>
+            <button class="mode-btn" onclick="setMode('-')" id="btn-sub" data-lang="mode-sub">➖ Ayirish</button>
+            <button class="mode-btn" onclick="setMode('*')" id="btn-mul" data-lang="mode-mul">✖️ Ko'paytirish</button>
+            <button class="mode-btn" onclick="setMode('/')" id="btn-div" data-lang="mode-div">➗ Bo'lish</button>
+        </div>
+
+        <div class="score-box"><span data-lang="score">Ball</span>: <span id="score">0</span></div>
+        <div class="emoji-display" id="emoji-area">...</div>
+        <div class="question" id="question">...</div>
+        
+        <input type="number" id="answer" placeholder="?" autofocus onkeydown="if(event.key==='Enter') checkAnswer()">
+        <button class="check-btn" onclick="checkAnswer()" data-lang="btn-check">Tekshirish</button>
+        
+        <div id="result"></div>
+        
+        <!-- Barcha o'yin HTML fayllarida orqaga qaytish tugmasini shunday o'zgartiring: -->
+<a href="index.html" onclick="saveScoreAndGoBack()" class="back-btn">
+    <i class="fas fa-arrow-left"></i> <span>Orqaga qaytish</span>
+</a>
+
+    </div>
+
+    <!-- JavaScript faylini ulash -->
+    <script>
+let currentMode = '+';
+let score = 0;
+let currentQuestionIndex = 0;
+let currentQuestionData = null;
+
+// HTML ichidagi audio elementlarini JS orqali ulash
+const correctSound = document.getElementById("sound-correct");
+const wrongSound = document.getElementById("sound-wrong");
+
+// Emojilar to'plami (mevalar, hayvonlar, mashinalar)
+const emojiPool = ["🍎", "🍌", "🍓", "🦁", "🐻", "🐼", "🚗", "🚀", "✈️"];
+
+// 4 ta bo'limga 5 tadan tayyor savollar bazasi
+const questionsDatabase = {
+    '+': [
+        { num1: 2, num2: 3, answer: 5 },
+        { num1: 4, num2: 1, answer: 5 },
+        { num1: 5, num2: 2, answer: 7 },
+        { num1: 1, num2: 3, answer: 4 },
+        { num1: 3, num2: 3, answer: 6 }
+    ],
+    '-': [
+        { num1: 5, num2: 2, answer: 3 },
+        { num1: 7, num2: 4, answer: 3 },
+        { num1: 6, num2: 1, answer: 5 },
+        { num1: 8, num2: 3, answer: 5 },
+        { num1: 4, num2: 2, answer: 2 }
+    ],
+    '*': [
+        { num1: 2, num2: 2, answer: 4 },
+        { num1: 3, num2: 2, answer: 6 },
+        { num1: 4, num2: 1, answer: 4 },
+        { num1: 2, num2: 4, answer: 8 },
+        { num1: 3, num2: 3, answer: 9 }
+    ],
+    '/': [
+        { num1: 4, num2: 2, answer: 2 },
+        { num1: 6, num2: 3, answer: 2 },
+        { num1: 8, num2: 2, answer: 4 },
+        { num1: 9, num2: 3, answer: 3 },
+        { num1: 5, num2: 1, answer: 5 }
+    ]
+};
+
+const langData = {
+    uz: { title: "🧮 Matematika O'yini", score: "Ball", "btn-check": "Tekshirish", "btn-back": "Orqaga qaytish", right: "🎉 To'g'ri! Barakalla!", wrong: "❌ Noto'g'ri, yana urinib ko'r!", "mode-add": "➕ Qo'shish", "mode-sub": "➖ Ayirish", "mode-mul": "✖️ Ko'paytirish", "mode-div": "➗ Bo'lish" },
+    en: { title: "🧮 Math Game", score: "Score", "btn-check": "Check", "btn-back": "Go Back", right: "🎉 Correct! Well done!", wrong: "❌ Incorrect, try again!", "mode-add": "➕ Addition", "mode-sub": "➖ Subtraction", "mode-mul": "✖️ Multiplication", "mode-div": "➗ Division" },
+    ru: { title: "🧮 Математика", score: "Баллы", "btn-check": "Проверить", "btn-back": "Назад", right: "🎉 Правильно! Молодец!", wrong: "❌ Неверно, попробуйте еще раз!", "mode-add": "➕ Сложение", "mode-sub": "➖ Вычитание", "mode-mul": "✖️ Умножение", "mode-div": "➗ Деление" },
+    tr: { title: "🧮 Matematik Oyunu", score: "Puan", "btn-check": "Kontrol Et", "btn-back": "Geri Dön", right: "🎉 Doğru! Tebrikler!", wrong: "❌ Yanlış, tekrar dene!", "mode-add": "➕ Toplama", "mode-sub": "➖ Çıkarma", "mode-mul": "✖️ Çarpma", "mode-div": "➗ Bölme" },
+    ko: { 
+    title: "🧮 수학 게임", 
+    score: "점수", 
+    "btn-check": "확인하기", 
+    "btn-back": "돌아가기", 
+    right: "🎉 정답입니다! 잘했어요!", 
+    wrong: "❌ 틀렸습니다, 다시 시도해보세요!", 
+    "mode-add": "➕ 더하기", 
+    "mode-sub": "➖ 빼기", 
+    "mode-mul": "✖️ 곱하기", 
+    "mode-div": "➗ 나누기" 
+}
+
+};
+
+function setMode(mode) {
+    currentMode = mode;
+    currentQuestionIndex = 0;
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    if(mode === '+') document.getElementById('btn-add').classList.add('active');
+    if(mode === '-') document.getElementById('btn-sub').classList.add('active');
+    if(mode === '*') document.getElementById('btn-mul').classList.add('active');
+    if(mode === '/') document.getElementById('btn-div').classList.add('active');
+    generateQuestion();
+}
+
+function generateQuestion() {
+    document.getElementById('result').innerText = '';
+    document.getElementById('answer').value = '';
+    
+    const modeQuestions = questionsDatabase[currentMode];
+    
+    if (currentQuestionIndex >= modeQuestions.length) {
+        currentQuestionIndex = 0;
+    }
+    
+    currentQuestionData = modeQuestions[currentQuestionIndex];
+    
+    // Har safar tasodifiy har xil emoji (meva, hayvon, mashina) tanlash
+    const randomEmoji = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+    
+    const items1 = randomEmoji.repeat(currentQuestionData.num1);
+    const items2 = randomEmoji.repeat(currentQuestionData.num2);
+    
+    let symbolEmoji = currentMode;
+    let symbolText = currentMode;
+    if(currentMode === '*') { symbolEmoji = "✖️"; symbolText = "x"; }
+    if(currentMode === '/') { symbolEmoji = "➗"; symbolText = "÷"; }
+    if(currentMode === '+') { symbolEmoji = "➕"; symbolText = "+"; }
+    if(currentMode === '-') { symbolEmoji = "➖"; symbolText = "-"; }
+
+    document.getElementById('emoji-area').innerText = `${items1} ${symbolEmoji} ${items2}`;
+    document.getElementById('question').innerText = `${currentQuestionData.num1} ${symbolText} ${currentQuestionData.num2} = ?`;
+}
+
+function checkAnswer() {
+    const userAnswer = parseInt(document.getElementById('answer').value);
+    const resultDiv = document.getElementById('result');
+    const currentLang = document.getElementById('lang-select').value;
+
+    if (userAnswer === currentQuestionData.answer) {
+        // HTML ichidagi to'g'ri audio elementini chalish
+        if(correctSound) {
+            correctSound.currentTime = 0;
+            correctSound.play().catch(e => console.log(e));
+        }
+        
+        score += 10;
+        document.getElementById('score').innerText = score;
+        resultDiv.innerText = langData[currentLang].right;
+        resultDiv.style.color = "#2ecc71";
+        currentQuestionIndex++;
+        setTimeout(generateQuestion, 1500);
+    } else {
+        // HTML ichidagi xato audio elementini chalish
+        if(wrongSound) {
+            wrongSound.currentTime = 0;
+            wrongSound.play().catch(e => console.log(e));
+        }
+        
+        resultDiv.innerText = langData[currentLang].wrong;
+        resultDiv.style.color = "#e74c3c";
+    }
+}
+
+function changeLanguage() {
+    const lang = document.getElementById('lang-select').value;
+    document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        el.innerText = langData[lang][key];
+    });
+    setMode(currentMode);
+}
+    // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
+    }
+
+// O'yinni ilk bor ishga tushirish
+generateQuestion();
+
+
+    </script>
+    <!-- HTML ichida audio elementlari -->
+
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang="title">⚽ Futbol Viktorina & Penalti</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Comic Sans MS', sans-serif; }
+        body { background: #27ae60; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .game-box { background: white; padding: 30px; border-radius: 24px; box-shadow: 0 12px 35px rgba(0,0,0,0.3); text-align: center; max-width: 600px; width: 100%; border: 4px solid #2ecc71; position: relative; }
+        h1.main-title { color: #27ae60; margin-bottom: 15px; font-size: 28px; }
+        
+        /* Rejimlar paneli */
+        .modes-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .mode-select-btn { padding: 12px; font-size: 16px; border: 2px solid #2ecc71; border-radius: 12px; cursor: pointer; background: #fff; font-weight: bold; transition: 0.2s; color: #27ae60; }
+        .mode-select-btn.active { background: #2ecc71; color: white; border-color: #27ae60; }
+
+        .score-box { font-size: 18px; margin-bottom: 15px; color: #2ecc71; font-weight: bold; display: flex; justify-content: space-between; background: #e8f8f5; padding: 12px 15px; border-radius: 10px; }
+        
+        /* Viktorina maydoni */
+        .question-display { background: #e8f8f5; padding: 25px; border-radius: 16px; margin-bottom: 20px; border: 3px dashed #2ecc71; min-height: 120px; display: flex; justify-content: center; align-items: center; }
+        .question-display h1 { font-size: 26px; font-weight: bold; color: #2c3e50; line-height: 1.4; }
+        
+        /* Penalti Maydoni */
+        .penalty-stadium { display: none; background: #2196f3; padding: 20px; border-radius: 16px; border: 4px solid #fff; position: relative; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.4); }
+        .goal-post { width: 85%; height: 160px; border: 6px solid #fff; border-bottom: none; margin: 0 auto; position: relative; background: rgba(255,255,255,0.15); border-radius: 4px 4px 0 0; }
+        .goalkeeper { font-size: 55px; position: absolute; bottom: 0; left: 45%; transition: 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        /* 4 ta Variant tugmalari */
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .opt-btn { background: #2ecc71; color: white; border: none; padding: 18px; font-size: 18px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 4px #27ae60; text-align: center; }
+        .opt-btn:hover { background: #27ae60; }
+        .opt-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        #result { margin-top: 15px; font-size: 22px; font-weight: bold; min-height: 35px; }
+        .back-btn { display: inline-block; margin-top: 25px; color: #7f8c8d; text-decoration: none; font-size: 16px; font-weight: bold; }
+        
+        .top-bar { position: relative; width: 100%; margin-top: 35px; }
+        select { position: absolute; top: -45px; right: 0; padding: 6px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="game-box">
+        <div class="top-bar">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="uz">🇺🇿 UZ</option>
+                <option value="en">🇬🇧 EN</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="tr">🇹🇷 TR</option>
+                <option value="ko">🇰🇷 KO</option>
+            </select>
+        </div>
+
+        <h1 class="main-title" data-lang="title">⚽ Futbol Viktorina</h1>
+        
+        <div class="modes-bar">
+            <button class="mode-select-btn active" onclick="switchMode('quiz')" id="mode-quiz" data-lang="btn-mode-quiz">📋 Viktorina</button>
+            <button class="mode-select-btn" onclick="switchMode('penalty')" id="mode-penalty" data-lang="btn-mode-penalty">⚽ Penalti Tepish</button>
+        </div>
+
+        <div class="score-box">
+            <div><span id="question-label" data-lang="text-question">Savol</span>: <span id="current-question-num">1</span></div>
+            <div><span data-lang="score">Ball</span>: <span id="score">0</span></div>
+        </div>
+        
+        <!-- Penalti rejimi uchun vizual stadion -->
+        <div class="penalty-stadium" id="penalty-stadium">
+            <div class="goal-post">
+                <div class="goalkeeper" id="goalkeeper">🕴️</div>
+            </div>
+        </div>
+
+        <!-- Savol maydoni -->
+        <div class="question-display">
+            <h1 id="question-text">...</h1>
+        </div>
+        
+        <!-- 4 ta variant tugmalari -->
+        <div class="options-grid">
+            <button class="opt-btn" onclick="handleButtonClick(0)" id="opt0">...</button>
+            <button class="opt-btn" onclick="handleButtonClick(1)" id="opt1">...</button>
+            <button class="opt-btn" onclick="handleButtonClick(2)" id="opt2">...</button>
+            <button class="opt-btn" onclick="handleButtonClick(3)" id="opt3">...</button>
+        </div>
+        
+        <div id="result"></div>
+        
+        <!-- Barcha o'yin HTML fayllarida orqaga qaytish tugmasini shunday o'zgartiring: -->
+<a href="index.html" onclick="saveScoreAndGoBack()" class="back-btn">
+    <i class="fas fa-arrow-left"></i> <span>Orqaga qaytish</span>
+</a>
+
+    </div>
+
+    <script>
+        { // Fayl boshlanishi (To'qnashuvlarni oldini olish xavfsizlik qobig'i)
+
+    // === GLOBAL O'ZGARUVCHILAR VA HOLATLAR ===
+    let gameMode = 'quiz'; // 'quiz' yoki 'penalty'
+    let score = 0;
+    let currentQuestionIndex = 0;
+    let currentQuestionData = null;
+
+    // === FUTBOL VIKTORINA SAVOLLAR BAZASI (1-3 SAVOLLAR) ===
+    const footballQuestions1 = [
+        {
+            qText: {
+                uz: "Futbol o'yinida bitta jamoada nechta o'yinchi maydonga tushadi?",
+                en: "How many players from one team are on the field in a football match?",
+                ru: "Сколько игроков от одной команды выходит на поле в футбольном матче?",
+                tr: "Bir futbol maçında bir takımdan kaç oyuncu sahaya çıkar?",
+                ko: "축구 경기에서 한 팀당 몇 명의 선수가 경기장에 출전하나요?"
+            },
+            options: ["9", "10", "11", "12"],
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "Futbolda faqat qaysi o'yinchi to'pni qo'li bilan ushlashi mumkin?",
+                en: "Which player in football is allowed to touch the ball with their hands?",
+                ru: "Какому игроку в футболе разрешено трогать мяч руками?",
+                tr: "Futbolda sadece hangi oyuncunun topa elle dokunmasına izin verilir?",
+                ko: "축구에서 유일하게 손으로 공을 건드릴 수 있는 선수는 누구인가요?"
+            },
+            options: {
+                uz: ["Hujumchi", "Himoyachi", "Darvozabon", "Hakam"],
+                en: ["Forward", "Defender", "Goalkeeper", "Referee"],
+                ru: ["Нападающий", "Защитник", "Вратарь", "Судья"],
+                tr: ["Forvet", "Defans", "Kaleci", "Hakem"],
+                ko: ["공격수", "수비수", "골키퍼", "심판"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "Futbol o'yinining bitta taymi necha daqiqa davom etadi?",
+                en: "How many minutes does one half of a football match last?",
+                ru: "Сколько минут длится один тайм в футбольном матче?",
+                tr: "Bir futbol maçının bir yarısı kaç dakika sürer?",
+                ko: "축구 경기에서 전반전 또는 후반전 한 타임은 몇 분 동안 진행되나요?"
+            },
+            options: ["30", "45", "60", "90"],
+            answer: 1
+        }
+    ];
+    // === FUTBOL VIKTORINA SAVOLLAR BAZASI (4-6 SAVOLLAR) ===
+    const footballQuestions2 = [
+        {
+            qText: {
+                uz: "Jahon chempionati (World Cup) har necha yilda bir marta o'tkaziladi?",
+                en: "How many years apart is the World Cup held?",
+                ru: "Раз в сколько лет проводится Чемпионат мира по футболу?",
+                tr: "Dünya Kupası kaç yılda bir düzenlenir?",
+                ko: "월드컵은 몇 년마다 한 번씩 개최되나요?"
+            },
+            options: {
+                uz: ["2 yilda", "3 yilda", "4 yilda", "5 yilda"],
+                en: ["2 years", "3 years", "4 years", "5 years"],
+                ru: ["2 года", "3 года", "4 года", "5 лет"],
+                tr: ["2 yılda", "3 yılda", "4 yılda", "5 yılda"],
+                ko: ["2년마다", "3년마다", "4년마다", "5년마다"]
+            },
+            answer: 2
+        },
+        {
+            qText: {
+                uz: "Futbol maydonining shakli qanday bo'ladi?",
+                en: "What is the shape of a football field?",
+                ru: "Какую форму имеет футбольное поле?",
+                tr: "Futbol sahasının şekli nasıldır?",
+                ko: "축구 경기장의 모양은 어떤 형태인가요?"
+            },
+            options: {
+                uz: ["Kvadrat", "To'rtburchak", "Doira", "Uchburchak"],
+                en: ["Square", "Rectangle", "Circle", "Triangle"],
+                ru: ["Квадрат", "Прямоугольник", "Круг", "Треугольник"],
+                tr: ["Kare", "Dikdörtgen", "Daire", "Üçgen"],
+                ko: ["정사각형", "직사각형", "원형", "삼각형"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "Futbolda qoidabuzarlik uchun hakam o'yinchiga qanday jazo kartochkalarini ko'rsatishi mumkin?",
+                en: "What color penalty cards can a referee show to a player in football?",
+                ru: "Карточки какого цвета судья может показать игроку за нарушение правил?",
+                tr: "Futbolda hakemin kuralları ihlal eden oyuncuya gösterebileceği kartların renkleri nelerdir?",
+                ko: "축구에서 규칙을 위반한 선수에게 심판이 보여줄 수 있는 페널티 카드의 색상은 무엇인가요?"
+            },
+            options: {
+                uz: ["Sariq va Qizil", "Ko'k va Yashil", "Oq va Qora", "Sariq va Ko'k"],
+                en: ["Yellow and Red", "Blue and Green", "White and Black", "Yellow and Blue"],
+                ru: ["Желтая и Красная", "Синяя и Зеленая", "Белая и Черная", "Желтая и Синяя"],
+                tr: ["Sarı ve Kırmızı", "Mavi ve Yeşil", "Beyaz ve Siyah", "Sarı ve Mavi"],
+                ko: ["노란색과 빨간색", "파란색과 초록색", "흰색과 검은색", "노란색과 파란색"]
+            },
+            answer: 0
+        }
+    ];
+    // === FUTBOL VIKTORINA SAVOLLAR BAZASI (7-10 SAVOLLAR) ===
+    const footballQuestions3 = [
+        {
+            qText: {
+                uz: "Futbol to'pining shakli qanday geometrik shaklga ega?",
+                en: "What geometric shape does a football have?",
+                ru: "Какую геометрическую форму имеет футбольный мяч?",
+                tr: "Futbol topu hangi geometrik şekle sahiptir?",
+                ko: "축구공은 어떤 기하학적 모양을 가지고 있나요?"
+            },
+            options: {
+                uz: ["Aylana / Shar", "Kvadrat", "Uchburchak", "Tuxumsimon"],
+                en: ["Circle / Sphere", "Square", "Triangle", "Oval"],
+                ru: ["Круг / Шар", "Квадрат", "Треугольник", "Овал"],
+                tr: ["Daire / Küre", "Kare", "Üçgen", "Oval"],
+                ko: ["원형 / 구형", "정사각형", "삼각형", "타원형"]
+            },
+            answer: 0
+        },
+        {
+            qText: {
+                uz: "O'yin qoidalari buzilganda darvoza qarshisidagi 11 metrlik nuqtadan tepiladigan zarba nima deyiladi?",
+                en: "What is a 11-meter penalty kick called in football?",
+                ru: "Как называется 11-метровый удар по воротам за нарушение правил?",
+                tr: "Kuralların ihlali durumunda kaleden 11 metre uzaklıktan atılan şut ne ad verilir?",
+                ko: "규칙 위반 시 골문 앞 11미터 지점에서 차는 페널티 킥을 무엇이라고 하나요?"
+            },
+            options: ["Aut", "Penalti", "Kornat", "Ofsayd"],
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "Futbol o'yinini maydonda turib kim boshqaradi va nazorat qiladi?",
+                en: "Who manages and controls the football match on the field?",
+                ru: "Кто управляет футбольной игрой и контролирует ее прямо на поле?",
+                tr: "Futbol maçını sahada kim yönetir и kontrol eder?",
+                ko: "경기장 위에서 축구 경기를 진행하고 조율하는 사람은 누구인가요?"
+            },
+            options: {
+                uz: ["Murabbiy", "Hakam", "Sardor", "Darvozabon"],
+                en: ["Coach", "Referee", "Captain", "Goalkeeper"],
+                ru: ["Тренер", "Судьи", "Капитан", "Вратарь"],
+                tr: ["Teknik Direktör", "Hakem", "Kaptan", "Kaleci"],
+                ko: ["감독", "심판", "주장", "골키퍼"]
+            },
+            answer: 1
+        },
+        {
+            qText: {
+                uz: "To'p maydonning yon chizig'idan chiqib ketsa, o'yin qanday nomli zarba bilan boshlanadi?",
+                en: "How is the game restarted when the ball goes over the sideline?",
+                ru: "Как возобновляется игра, когда мяч выходит за боковую линию поля?",
+                tr: "Top sahanın yan çizgisinden dışarı çıktığında oyun nasıl başlar?",
+                ko: "공이 경기장 사이드라인 밖으로 나갔을 때 경기는 어떤 드로우로 시작되나요?"
+            },
+            options: ["Penalti", "Aut (Throw-in)", "Burchak zarbasi", "Erkin zarba"],
+            answer: 1
+        }
+    ];
+
+    // Barcha viktorina savollarini bitta massivga birlashtirish
+    const fullFootballDatabase = footballQuestions1.concat(footballQuestions2, footballQuestions3);
+    // === 5 TILDAGI TARJIMALAR BAZASI ===
+    const langData = {
+        uz: { title: "⚽ Futbol Viktorina & Penalti", score: "Ball", "btn-back": "Orqaga qaytish", right: "🎉 To'g'ri! Barakalla!", wrong: "❌ Noto'g'ri, yana urinib ko'r!", "text-question": "Savol", "btn-mode-quiz": "📋 Viktorina", "btn-mode-penalty": "⚽ Penalti Tepish", "shoot-goal": "To'pni darvozaning qaysi burchagiga tepasiz? ⚽", "goal": "⚽ GOOOL!! Koptok darvoza to'rida!", "save": "❌ Seyv! Darvozabon to'pni qaytardi!" },
+        en: { title: "⚽ Football Quiz & Penalty", score: "Score", "btn-back": "Go Back", right: "🎉 Correct! Well done!", wrong: "❌ Incorrect, try again!", "text-question": "Question", "btn-mode-quiz": "📋 Quiz Mode", "btn-mode-penalty": "⚽ Penalty Shootout", "shoot-goal": "Which corner of the goal will you shoot at? ⚽", "goal": "⚽ GOOOL!! The ball is in the net!", "save": "❌ Saved! The goalkeeper blocked it!" },
+        ru: { title: "⚽ Футбольная викторина и Пенальти", score: "Баллы", "btn-back": "Назад", right: "🎉 Правильно! Молодец!", wrong: "❌ Неверно, попробуйте еще раз!", "text-question": "Вопрос", "btn-mode-quiz": "📋 Викторина", "btn-mode-penalty": "⚽ Серия пенальти", "shoot-goal": "В какой угол ворот вы прогьете? ⚽", "goal": "⚽ ГОООЛ!! Мяч в сетке ворот!", "save": "❌ Сейв! Вратарь отбил этот мяч!" },
+        tr: { title: "⚽ Futbol Bilgi Yarışması & Penaltı", score: "Puan", "btn-back": "Geri Dön", right: "🎉 Doğru! Tebrikler!", wrong: "❌ Yanlış, tekrar dene!", "text-question": "Soru", "btn-mode-quiz": "📋 Bilgi Yarışması", "btn-mode-penalty": "⚽ Penaltı Atışları", "shoot-goal": "Topu kalenin hangi köşesine vuracaksınız? ⚽", "goal": "⚽ GOOOL!! Top ağlarda!", "save": "❌ Kurtarış! Kaleci topu çeldi!" },
+        ko: { title: "⚽ 축구 퀴즈 & 페널티킥", score: "점수", "btn-back": "돌아가기", right: "🎉 정답입니다! 잘했어요!", wrong: "❌ 틀렸습니다, 다시 시도해보세요!", "text-question": "질문", "btn-mode-quiz": "📋 퀴즈 모드", "btn-mode-penalty": "⚽ 승부차기 모드", "shoot-goal": "골문의 어느 구석으로 슛을 날리시겠습니까? ⚽", "goal": "⚽ 골!! 공이 골망을 흔들었습니다!", "save": "❌ 선방! 골키퍼가 막아냈습니다!" }
+    };
+
+    // Rejimni almashtirish funksiyasi
+    window.switchMode = function(mode) {
+        gameMode = mode;
+        const penaltyStadium = document.getElementById("penalty-stadium");
+        const quizBtn = document.getElementById("mode-quiz");
+        const penaltyBtn = document.getElementById("mode-penalty");
+
+        if (mode === 'quiz') {
+            penaltyStadium.style.display = "none";
+            quizBtn.classList.add("active");
+            penaltyBtn.classList.remove("active");
+            currentQuestionIndex = 0;
+            generateQuestion();
+        } else {
+            penaltyStadium.style.display = "block";
+            quizBtn.classList.remove("active");
+            penaltyBtn.classList.add("active");
+            loadPenaltyRound();
+        }
+    }
+    // === 5-QISM: VIKTORINA REJIMINI CHIQARISH MANTIQLARI ===
+    function generateQuestion() {
+        document.getElementById('result').innerText = '';
+        const lang = document.getElementById('lang-select').value;
+
+        if (currentQuestionIndex >= fullFootballDatabase.length) {
+            currentQuestionIndex = 0; // Savollar tugasa, boshidan boshlanadi
+        }
+
+        currentQuestionData = fullFootballDatabase[currentQuestionIndex];
+        
+        // Savol raqamini o'zgartirish
+        document.getElementById("current-question-num").innerText = currentQuestionIndex + 1;
+        document.getElementById("question-label").innerText = langData[lang]["text-question"];
+
+        // Savol matnini chiqarish
+        document.getElementById("question-text").innerText = currentQuestionData.qText[lang] || currentQuestionData.qText['uz'];
+
+        // 4 ta variant tugmalariga matnlarni joylash
+        for (let i = 0; i < 4; i++) {
+            let opt = currentQuestionData.options;
+            let optionText = "";
+            
+            if (Array.isArray(opt)) {
+                optionText = opt[i];
+            } else {
+                optionText = opt[lang] ? opt[lang][i] : opt['uz'][i];
+            }
+            
+            document.getElementById(`opt${i}`).innerText = optionText;
+        }
+    }
+
+    // Viktorina javobini tekshirish funksiyasi
+    function checkQuizAnswer(selectedIndex) {
+        const resultDiv = document.getElementById('result');
+        const lang = document.getElementById('lang-select').value;
+
+        if (selectedIndex === currentQuestionData.answer) {
+            score += 10;
+            document.getElementById('score').innerText = score;
+            resultDiv.innerText = langData[lang].right;
+            resultDiv.style.color = "#2ecc71";
+            currentQuestionIndex++;
+            setTimeout(generateQuestion, 1500);
+        } else {
+            resultDiv.innerText = langData[lang].wrong;
+            resultDiv.style.color = "#e74c3c";
+        }
+    }
+    // === 6-QISM: PENALTI REJIMI VA DARVOZABON MANTIQLARI ===
+    function loadPenaltyRound() {
+        document.getElementById('result').innerText = '';
+        const lang = document.getElementById('lang-select').value;
+        const gk = document.getElementById("goalkeeper");
+        
+        // Darvozabonni markazga qaytarish
+        gk.style.left = "45%";
+        gk.style.bottom = "0";
+
+        // Sarlavha matnini penaltiga moslash
+        document.getElementById("question-text").innerText = langData[lang]["shoot-goal"];
+        document.getElementById("current-question-num").innerText = "⚽";
+        document.getElementById("question-label").innerText = langData[lang]["btn-mode-penalty"];
+        
+        // 4 ta tugmaga burchaklarni yozish
+        document.getElementById("opt0").innerText = "↖️ Chap-tepa";
+        document.getElementById("opt1").innerText = "↗️ O'ng-tepa";
+        document.getElementById("opt2").innerText = "↩️ Chap-past";
+        document.getElementById("opt3").innerText = "↪️ O'ng-past";
+    }
+
+    function shootPenalty(playerChoiceIdx) {
+        const resultDiv = document.getElementById('result');
+        const lang = document.getElementById('lang-select').value;
+        const gk = document.getElementById("goalkeeper");
+        
+        // Darvozabon tasodifiy ravishda 4 ta burchakdan birini tanlaydi
+        const gkChoiceIdx = Math.floor(Math.random() * 4);
+
+        // Darvozabonni vizual ravishda tanlangan burchakka sakratish
+        if (gkChoiceIdx === 0) { gk.style.left = "5%"; gk.style.bottom = "80px"; }
+        if (gkChoiceIdx === 1) { gk.style.left = "80%"; gk.style.bottom = "80px"; }
+        if (gkChoiceIdx === 2) { gk.style.left = "5%"; gk.style.bottom = "0"; }
+        if (gkChoiceIdx === 3) { gk.style.left = "80%"; gk.style.bottom = "0"; }
+
+        // To'p burchagi va darvozabon yo'nalishi bir xil bo'lsa — SEYV, aks holda — GOOL!
+        if (playerChoiceIdx === gkChoiceIdx) {
+            resultDiv.innerText = langData[lang]["save"];
+            resultDiv.style.color = "#e74c3c";
+        } else {
+            score += 15; // Penaltida gol urilganda ko'proq ball beriladi
+            document.getElementById('score').innerText = score;
+            resultDiv.innerText = langData[lang]["drop"] || langData[lang]["goal"];
+            resultDiv.style.color = "#2ecc71";
+        }
+
+        // 2 soniyadan keyin yangi penalti raundi boshlanadi
+        setTimeout(loadPenaltyRound, 2000);
+    }
+    // === 7-QISM: UMUMIY TUGMA BOSHQARUVI, TILLAR VA ENG OXIRGI QAVS ===
+
+    // HTML ichidagi 4 ta variant tugmasi bosilganda ishlaydigan umumiy funksiya
+    window.handleButtonClick = function(index) {
+        if (gameMode === 'quiz') {
+            checkQuizAnswer(index);
+        } else {
+            shootPenalty(index);
+        }
+    }
+
+    // Tilni almashtirish funksiyasi (Global oynaga chiqarish)
+    window.changeLanguage = function() {
+        const lang = document.getElementById('lang-select').value;
+        document.querySelectorAll('[data-lang]').forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if(langData[lang][key]) {
+                el.innerText = langData[lang][key];
+            }
+        });
+        
+        // Amaldagi rejimga qarab ekrandagi yozuvlarni yangilash
+        if (gameMode === 'quiz') {
+            generateQuestion();
+        } else {
+            loadPenaltyRound();
+        }
+    }
+
+    // O'yinni birinchi marta viktorina rejimi bilan yuklash
+    generateQuestion();
+    // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
+    window.saveScoreAndGoBack = function() {
+        localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
+    }
+
+} // <--- 7-bo'lakning va butun football_game.js faylining ENG OXIRGI loyihani xatosiz yopuvchi qavsi!
+
+    </script>
+</body>
+</html>
