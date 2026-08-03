@@ -491,8 +491,15 @@ function checkMode3(selectedWord) {
     }
 
 }
+// Test muvaffaqiyatli tugaganda ishlaydigan kod:
+let data = JSON.parse(localStorage.getItem('aqlliBolajonData')) || {};
+data.diamonds = (data.diamonds || 0) + 5; // 5 olmos berildi!
+localStorage.setItem('aqlliBolajonData', JSON.stringify(data));
+alert("Tabriklaymiz! Siz 5 olmos yutib oldingiz 💎");
 
 
     </script>
+    <script src="script.js"></script>
+
 </body>
 </html>

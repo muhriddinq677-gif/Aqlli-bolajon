@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqlli Bolajon - Dashboard va Do'kon</title>
+ 
+</head>
+<style>
+    :root {
+    --primary: #4a90e2;
+    --success: #2ecc71;
+    --warning: #f1c40f;
+    --dark: #2c3e50;
+    --danger: #e74c3c;
+}
+
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: #f0f4f8; 
+    margin: 0; 
+    padding: 20px; 
+    color: var(--dark);
+    overflow-x: hidden;
+}
+
+.container { 
+    max-width: 750px; 
+    margin: 0 auto; 
+    background: white; 
+    padding: 25px; 
+    border-radius: 20px; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+    position: relative; 
+    z-index: 10; 
+}
+
+/* Orqaga Qaytish Tugmasi */
+.back-btn {
+    display: inline-block;
+    background: var(--danger);
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    transition: 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.back-btn:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+/* Yuqoridagi Eslatma Banneri */
+.banner { 
+    background: #ffeaa7; 
+    color: #d63031; 
+    padding: 12px; 
+    border-radius: 10px; 
+    text-align: center; 
+    font-weight: bold; 
+    margin-bottom: 20px; 
+    border: 2px dashed #ff7675; 
+    font-size: 15px;
+}
+
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 3px solid #eef2f5; 
+    padding-bottom: 15px; 
+}
+
+.profile-mask {
+    font-size: 28px;
+    vertical-align: middle;
+}
+
+.score-box { 
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #e67e22; 
+    background: #fff3e0; 
+    padding: 8px 15px; 
+    border-radius: 30px; 
+    display: flex; 
+    align-items: center; 
+    gap: 5px; 
+}
+
+.section { 
+    margin-top: 30px; 
+}
+
+h2 { 
+    font-size: 18px; 
+    color: var(--dark); 
+    border-left: 5px solid var(--primary); 
+    padding-left: 10px; 
+    margin-bottom: 15px;
+}
+
+/* Elementlar Grid Setkasi */
+.card-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+    gap: 15px; 
+    margin-top: 10px; 
+}
+
+/* Kartalar Dizayni */
+.item-card { 
+    background: #f8fafc; 
+    padding: 15px; 
+    border-radius: 12px; 
+    border: 1px solid #e2e8f0; 
+    text-align: center; 
+    transition: 0.3s; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+}
+
+.item-card:hover { 
+    transform: translateY(-3px); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+}
+
+.item-icon { 
+    font-size: 40px; 
+    margin-bottom: 10px; 
+}
+
+.item-title { 
+    font-size: 14px; 
+    font-weight: bold; 
+    margin-bottom: 8px; 
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tugmalar */
+button { 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    padding: 10px 12px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    width: 100%; 
+    transition: 0.2s; 
+    font-size: 14px;
+}
+
+button:hover { 
+    opacity: 0.9; 
+}
+
+.btn-go { 
+    background: var(--success); 
+}
+
+/* Sehrli Tayoqcha Zarrachalari Animatsiyasi */
+.sparkle {
+    position: absolute;
+    pointer-events: none;
+    background: transparent;
+    border-radius: 50%;
+    font-size: 24px;
+    z-index: 99999;
+    animation: fly 0.8s ease-out forwards;
+}
+/* Modal orqa foni (qorong'ulik) */
+/* Orqa qora fon */
+.modal-overlay {
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0, 0, 0, 0.7); 
+    z-index: 999999; /* Juda yuqori z-index, hamma narsaning tepasida turadi */
+    justify-content: center; 
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Oyna kontenti */
+.modal-content {
+    background: white; 
+    padding: 30px 25px; 
+    border-radius: 24px; 
+    text-align: center; 
+    position: relative; 
+    max-width: 340px; 
+    width: 90%; 
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    transform: scale(0.7) translateY(-50px);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Aktiv holat animatsiyasi */
+.modal-overlay.active { opacity: 1; }
+.modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+
+/* YOPISH (X) TUGMASI - ENDI MUKAMMAL BOSILADI */
+.close-modal-btn {
+    position: absolute !important; 
+    top: 10px !important; 
+    right: 15px !important; 
+    background: none !important; 
+    border: none !important; 
+    font-size: 32px !important; 
+    color: #bbb !important; 
+    cursor: pointer !important; 
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    z-index: 1000001 !important; /* Eng yuqori qatlamda turadi */
+    transition: color 0.2s;
+}
+.close-modal-btn:hover {
+    color: #e74c3c !important;
+}
+
+/* Ko'rsatkich mil */
+.wheel-pointer {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    color: #e74c3c;
+    z-index: 999;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* G'ildirak canvas elementi */
+#wheelCanvas {
+    display: block;
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+
+@keyframes fly {
+    0% { 
+        transform: translate(0, 0) scale(1); 
+        opacity: 1; 
+    }
+    100% { 
+        transform: translate(var(--mx), var(--my)) scale(0.2); 
+        opacity: 0; 
+    }
+}
+
+</style>
+<body>
+
+<div class="container">
+    <a href="index.html" class="back-btn">⬅️ Orqaga Qaytish</a>
+
+    <div class="banner">💡 VAZIFALARNI BAJARIB OLMOS YIG'ING! 💎</div>
+
+    <div class="header">
+        <div>Hozirgi Niqob: <span id="current-mask" class="profile-mask">👶</span></div>
+        <div class="score-box">💎 <span id="diamonds-display">20</span></div>
+    </div>
+
+    <!-- 1. VAZIFALAR BO'LIMI -->
+    <div class="section">
+        <h2>📝 Kunlik Vazifalar (Har kuni 3 ta yangi vazifa)</h2>
+        <div class="card-grid" id="quests-container"></div>
+    </div>
+
+    <!-- 2. TAYOQCHALAR BO'LIMI -->
+    <div class="section">
+        <h2>✨ Sehrli Tayoqchalar </h2>
+        <div class="card-grid">
+            <div class="item-card">
+                <div><div class="item-icon">✨</div><div class="item-title">Zar </div></div>
+                <button id="wand-1" onclick="handleWand(1)">💎 100</button>
+            </div>
+            <div class="item-card">
+                <div><div class="item-icon">⭐</div><div class="item-title">Yulduz </div></div>
+                <button id="wand-2" onclick="handleWand(2)">💎 100</button>
+            </div>
+            <div class="item-card">
+                <div><div class="item-icon">🎉</div><div class="item-title">Bayram Zari</div></div>
+                <button id="wand-3" onclick="handleWand(3)">💎 100</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. NIQOBLAR BO'LIMI -->
+    <div class="section">
+        <h2>🎭 Niqoblar Do'koni </h2>
+        <div class="card-grid">
+            <div class="item-card">
+                <div><div class="item-icon">🦁</div><div class="item-title">Arslon</div></div>
+                <button id="mask-lion" onclick="handleMask('🦁', 'lion')">💎 50</button>
+            </div>
+            <div class="item-card">
+                <div><div class="item-icon">🦊</div><div class="item-title">Aqlvoy Tulki</div></div>
+                <button id="mask-fox" onclick="handleMask('🦊', 'fox')">💎 50</button>
+            </div>
+            <div class="item-card">
+                <div><div class="item-icon">🐻</div><div class="item-title">Ayiqvoy</div></div>
+                <button id="mask-bear" onclick="handleMask('🐻', 'bear')">💎 50</button>
+            </div>
+            <div class="item-card">
+                <div><div class="item-icon">🐱‍👤</div><div class="item-title">Ninja</div></div>
+                <button id="mask-ninja" onclick="handleMask('🐱‍👤', 'ninja')">💎 50</button>
+            </div>
+            <div class="item-card">
+                <div><div class="item-icon">🐼</div><div class="item-title">Panda</div></div>
+                <button id="mask-panda" onclick="handleMask('🐼', 'panda')">💎 50</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 1. Quvnoq sovg'a qutisi tugmasi -->
+<div style="text-align: center; margin: 20px 0;">
+    <button onclick="openWheelModal()" style="background: linear-gradient(135deg, #ff9f43, #ee5253); color: white; padding: 12px 25px; font-size: 16px; border-radius: 30px; box-shadow: 0 5px 15px rgba(238, 82, 83, 0.4); border: 2px solid white; cursor: pointer; font-weight: bold; position: relative; z-index: 500;">
+        🎁 Kunlik Omad G'ildiragi
+    </button>
+</div>
+
+<!-- 2. Animatsiyali Modal Oyna (Popup) -->
+<div id="wheel-modal" class="modal-overlay">
+    <div class="modal-content">
+        <!-- Yopish tugmasi (X) -->
+        <button onclick="closeWheelModal()" class="close-modal-btn">&times;</button>
+        
+        <!-- MATN TEGI TO'G'RILANDI (Xatosiz variant) -->
+        <h3 id="wheel-title" style="margin-top: 5px; color: #2c3e50; font-size: 20px;">🎡 Omad Charxpalagi</h3>
+        <p style="color: #7f8c8d; font-size: 13px; margin-bottom: 20px;"> Sizda kuniga 1ta imkoniyat bor.</p>
+
+        <!-- Canvas g'ildiragi (Mutlaqo tekis chiziladi) -->
+        <div style="position: relative; display: inline-block; margin-bottom: 20px; width: 260px; height: 260px;">
+            <canvas id="wheelCanvas" width="260" height="260"></canvas>
+            <div class="wheel-pointer">▼</div>
+        </div>
+        
+        <!-- Aylantirish tugmasi -->
+        <button id="spin-btn" onclick="spinWheel()" style="background: #2ecc71; color: white; padding: 12px 30px; border-radius: 12px; font-size: 16px; border: none; cursor: pointer; font-weight: bold; width: auto; display: inline-block;">Aylantirish 🚀</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
