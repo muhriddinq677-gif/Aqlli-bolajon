@@ -485,12 +485,13 @@ function checkMode3(selectedWord) {
         resultDiv.innerText = langData[currentLang].wrong;
         resultDiv.style.color = "#e74c3c";
     }
+}
         // === REYTING UCHUN BALLARNI BOSH SAHIFAGA YUBORISH KODI ===
     window.saveScoreAndGoBack = function() {
         localStorage.setItem('current_game_score', score); // Joriy ballni xotiraga saqlaydi
     }
 
-}
+
 // Test muvaffaqiyatli tugaganda ishlaydigan kod:
 let data = JSON.parse(localStorage.getItem('aqlliBolajonData')) || {};
 data.diamonds = (data.diamonds || 0) + 5; // 5 olmos berildi!
